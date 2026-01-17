@@ -1,0 +1,6 @@
+tensorflow
+keras>=3.0.0
+numpy
+matplotlib
+pillow
+flask

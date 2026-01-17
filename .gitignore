@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.env
+*.h5
+*.pt
+*.weights
+*.log
+/venv
