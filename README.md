@@ -1,71 +1,96 @@
-# Water Meter Digit Detection using CNN (YOLOv8)
+# CNN-Based Water Meter Digit Recognition
 
-This project is a **Flask web application** that uses a **deep learning model (YOLOv8)** to detect and recognize **digits displayed on water meters** from images.
-The system allows users to upload an image of a water meter and automatically extract the digit readings.
+This project uses a Convolutional Neural Network (CNN) to detect and recognize digits from water meter images. It also includes a Flask web app to upload images and display predictions. YOLOv8 can be used for object detection and preprocessing of the meter region.
 
-## 📌 Project Description
+## **Team**
 
-Manual reading of water meters is time-consuming and error-prone.
-This project automates the process by using a **CNN-based object detection model (YOLOv8)** to detect meter digits in images and display the results through a **Flask web interface**.
+- Abdelaziz Ariri  
+- Ossama Ettaqafi  
 
-## 🧠 Model
-
-* **YOLOv8 Nano (`yolov8n.pt`)**
-* CNN-based object detection architecture
-* Trained / fine-tuned to detect water meter digits (0–9)
-
-## 🛠 Technologies Used
-
-* Python
-* Flask
-* YOLOv8 (Ultralytics)
-* OpenCV
-* NumPy
-
-## 📂 Project Structure
+## **Project Structure**
 
 ```
-├── app.py          # Flask web application
-├── yolov8n.pt      # YOLOv8 pretrained or fine-tuned weights
-├── requirements.txt
-└── README.md
-```
 
-## 🚀 How to Run
+CNN-Based-Water-Meter-Digit-Recognition/
+│
+├─ app.py              # Flask web application
+├─ test.py             # Script to test the model on images
+├─ model.keras         # Trained CNN model
+├─ yolov8n.pt          # YOLOv8 model (optional for meter detection)
+├─ requirements.txt    # Project dependencies
+├─ images/             # Example images
+└─ README.md           # This file
 
-### 1️⃣ Install dependencies
+````
+
+## **Installation**
+
+1. Clone the repository:
 
 ```bash
-pip install flask ultralytics opencv-python numpy
+git clone https://github.com/ossama-ettaqafi/CNN-Based-Water-Meter-Digit-Recognition.git
+cd CNN-Based-Water-Meter-Digit-Recognition
+````
+
+2. Create a virtual environment (Python 3.10 recommended):
+
+```bash
+python -m venv venv
+.\venv\Scripts\Activate.ps1   # Windows PowerShell
 ```
 
-### 2️⃣ Run the Flask app
+3. Upgrade pip:
+
+```bash
+python -m pip install --upgrade pip setuptools wheel
+```
+
+4. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+## **Usage**
+
+### **Run Flask app**
 
 ```bash
 python app.py
 ```
 
-### 3️⃣ Open in browser
+* Open your browser at `http://127.0.0.1:5000/`
+* Upload an image of a water meter
+* The app will display the detected digits
 
+### **Test CNN model directly**
+
+```bash
+python test.py
 ```
-http://127.0.0.1:5000
-```
 
-Upload a water meter image and the detected digits will be displayed.
+* Loads an image from the `images/` folder
+* Preprocesses it
+* Predicts digits using `model.keras`
 
-## 📊 Output
+## **Dependencies**
 
-* Bounding boxes around detected digits
-* Digit labels (0–9)
-* Visualized results on the uploaded image
+* TensorFlow 2.14
+* Keras >=3.0
+* NumPy
+* Matplotlib
+* Pillow
+* OpenCV
+* Flask
+* PyTorch
+* Ultralytics (YOLOv8)
 
-## 🔮 Future Improvements
+## **Notes**
 
-* Improve accuracy with custom-trained datasets
-* Add digit sequence reconstruction (full meter reading)
-* Support real-time camera input
-* Deploy using Docker or cloud services
+* Python 3.10 is recommended for TensorFlow compatibility.
+* YOLOv8 is optional but helps improve meter digit localization.
+* Make sure your venv is activated before running scripts.
 
-## 📜 License
+## **License**
 
-This project is intended for **academic and educational purposes**.
+This project is for educational and research purposes.
