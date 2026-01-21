@@ -1,630 +1,193 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <title>Reconnaissance du compteur d’eau</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Water Meter Digit Recognition</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        
-        body {
-            background: #f5f7fa;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        
-        .status {
-            display: inline-block;
-            padding: 5px 15px;
-            background: #e8f4fc;
-            border-radius: 20px;
-            color: #3498db;
-            font-size: 14px;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .upload-area {
-            border: 2px dashed #bdc3c7;
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 20px;
-        }
-        
-        .upload-area:hover {
-            border-color: #3498db;
-            background: #f8fafc;
-        }
-        
-        .upload-icon {
-            font-size: 48px;
-            color: #bdc3c7;
-            margin-bottom: 15px;
-        }
-        
-        .upload-text {
-            font-size: 18px;
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-        
-        .upload-subtext {
-            color: #7f8c8d;
-            font-size: 14px;
-        }
-        
-        .preview {
-            display: none;
-            margin-top: 20px;
-            text-align: center;
-        }
-        
-        .preview img {
-            max-width: 300px;
-            max-height: 200px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .controls {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .process-btn {
-            background: #3498db;
-            color: white;
-        }
-        
-        .process-btn:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-        }
-        
-        .process-btn:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .reset-btn {
-            background: #ecf0f1;
-            color: #2c3e50;
-        }
-        
-        .reset-btn:hover {
-            background: #d5dbdb;
-            transform: translateY(-2px);
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 40px;
-            background: white;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .results {
-            display: none;
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            margin: 20px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .meter-reading {
-            text-align: center;
-            padding: 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 10px;
-            margin-bottom: 25px;
-        }
-        
-        .reading-label {
-            font-size: 16px;
-            opacity: 0.9;
-            margin-bottom: 10px;
-        }
-        
-        .reading-value {
-            font-size: 60px;
-            font-weight: bold;
-            letter-spacing: 10px;
-            margin: 15px 0;
-            font-family: 'Courier New', monospace;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .confidence {
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
-        .result-image-container {
-            text-align: center;
-            margin: 25px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        
-        .result-image {
-            max-width: 100%;
-            border-radius: 10px;
-            border: 2px solid #ddd;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.2);
-            margin-top: 15px;
-        }
-        
-        .image-placeholder {
-            width: 100%;
-            height: 300px;
-            background: #e9ecef;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6c757d;
-            font-size: 16px;
-        }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        
-        .info-card {
-            text-align: center;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            transition: transform 0.3s;
-        }
-        
-        .info-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .info-icon {
-            font-size: 36px;
-            color: #3498db;
-            margin-bottom: 15px;
-        }
-        
-        .message {
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
-            text-align: center;
-            display: none;
-        }
-        
-        .error {
-            background: #fee;
-            color: #c33;
-            border: 1px solid #fcc;
-        }
-        
-        .success {
-            background: #efe;
-            color: #393;
-            border: 1px solid #cfc;
-        }
-        
-        .debug {
-            font-family: monospace;
-            background: #333;
-            color: #0f0;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            font-size: 12px;
-            display: none;
-        }
+        * { box-sizing: border-box; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; }
+        header { background: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1 { margin: 0; color: #1a73e8; }
+        .status { margin-top: 10px; display: inline-block; padding: 6px 16px; border-radius: 20px; background: #fff3cd; color: #856404; font-weight: bold; font-size: 14px; }
+
+        .card { background: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .upload-area { border: 3px dashed #dfe1e5; border-radius: 15px; padding: 50px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .upload-area:hover { border-color: #1a73e8; background: #f8fbff; }
+        .upload-icon { font-size: 48px; margin-bottom: 10px; }
+
+        .preview { display: none; margin-top: 20px; text-align: center; }
+        .preview img { max-width: 100%; max-height: 300px; border-radius: 10px; border: 1px solid #ddd; }
+
+        .controls { margin-top: 25px; display: flex; justify-content: center; gap: 15px; }
+        button { padding: 14px 28px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; }
+        .process-btn { background: #1a73e8; color: white; }
+        .process-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .reset-btn { background: #f1f3f4; }
+
+        .loading { display: none; text-align: center; padding: 40px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #eee; border-top: 4px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; margin: auto; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .results { display: none; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .reading-box { background: #1a73e8; color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 25px; }
+        .reading-value { font-size: 64px; font-family: "Courier New", monospace; letter-spacing: 8px; font-weight: 800; }
+
+        .display-container { display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
+        @media (max-width: 900px) { .display-container { grid-template-columns: 1fr; } }
+
+        .image-box { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .image-box h3 { font-size: 13px; color: #5f6368; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 10px; }
+        .image-box img { width: 100%; border-radius: 8px; }
+        .crop-img { border: 2px solid #1a73e8; }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <header>
-            <h1>💧 Water Meter Digit Recognition</h1>
-            <p class="subtitle">Upload a water meter image to automatically read the digits using AI</p>
-            <div class="status" id="statusIndicator">Model Status: Loading...</div>
-        </header>
-        
-        <div class="card">
-            <h2>📤 Upload Image</h2>
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📷</div>
-                <div class="upload-text">Click to select or drag & drop image</div>
-                <div class="upload-subtext">Supported formats: JPG, PNG, JPEG (Max 16MB)</div>
-                <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.bmp" hidden>
-            </div>
-            
-            <div class="preview" id="preview">
-                <h3>📋 Selected Image</h3>
-                <img id="previewImage" src="" alt="Image Preview">
-                <div id="fileName" style="margin-top: 10px; color: #666;"></div>
-            </div>
-            
-            <div class="controls">
-                <button class="process-btn" id="processBtn" disabled>
-                    🔍 Process Image
-                </button>
-                <button class="reset-btn" id="resetBtn">
-                    ↻ Reset
-                </button>
-            </div>
+<div class="container">
+
+    <header>
+        <h1>💧 Lecteur de compteur d’eau</h1>
+        <div class="status" id="status">Statut du modèle : vérification…</div>
+    </header>
+
+    <div class="card">
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📸</div>
+            <p><strong>Cliquez pour importer</strong> ou glissez une image ici</p>
+            <input type="file" id="fileInput" accept="image/*" hidden>
         </div>
-        
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <h3>Processing Image...</h3>
-            <p>Detecting digits with AI model</p>
-            <div style="margin-top: 20px; color: #666;">
-                <div>✓ Uploading image</div>
-                <div>✓ Enhancing contrast</div>
-                <div id="step3">○ Detecting digit area</div>
-                <div id="step4">○ Extracting individual digits</div>
-                <div id="step5">○ Recognizing with CNN</div>
-            </div>
+
+        <div class="preview" id="preview">
+            <img id="previewImg">
         </div>
-        
-        <div class="message error" id="errorMessage"></div>
-        <div class="message success" id="successMessage"></div>
-        
-        <div class="debug" id="debugInfo"></div>
-        
-        <div class="results" id="results">
-            <div class="meter-reading">
-                <div class="reading-label">✅ Detected Meter Reading</div>
-                <div class="reading-value" id="readingValue">00000000</div>
-                <div class="confidence">Confidence: <span id="confidenceValue">0%</span></div>
+
+        <div class="controls">
+            <button class="process-btn" id="processBtn" disabled>Analyser</button>
+            <button class="reset-btn" id="resetBtn">Réinitialiser</button>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>L’IA analyse le compteur…</p>
+    </div>
+
+    <div class="results" id="results">
+        <div class="reading-box">
+            <p>Index détecté</p>
+            <div class="reading-value" id="reading">----</div>
+            <p>Confiance : <span id="confidence">0%</span></p>
+        </div>
+
+        <div class="display-container">
+            <div class="image-box">
+                <h3>Détection complète</h3>
+                <img id="resultImg">
             </div>
-            
-            <div class="result-image-container">
-                <h3>🖼️ Processed Image</h3>
-                <p>Green boxes show detected digits, blue box shows ROI area</p>
-                <div id="imagePlaceholder" class="image-placeholder">
-                    <div>Processed image will appear here</div>
-                </div>
-                <img id="resultImage" class="result-image" src="" alt="Processed Result" style="display: none;">
-            </div>
-            
-            <div class="info-grid">
-                <div class="info-card">
-                    <div class="info-icon">📸</div>
-                    <h3>1. Upload</h3>
-                    <p>Take a clear photo of your water meter display</p>
-                </div>
-                <div class="info-card">
-                    <div class="info-icon">🎯</div>
-                    <h3>2. ROI Detection</h3>
-                    <p>System automatically finds digit display area</p>
-                </div>
-                <div class="info-card">
-                    <div class="info-icon">🔢</div>
-                    <h3>3. Digit Extraction</h3>
-                    <p>Individual digits are isolated using OpenCV</p>
-                </div>
-                <div class="info-card">
-                    <div class="info-icon">🧠</div>
-                    <h3>4. CNN Recognition</h3>
-                    <p>AI model identifies each digit with confidence score</p>
-                </div>
+
+            <div class="image-box">
+                <h3>Zoom chiffres (ROI)</h3>
+                <img id="cropImg" class="crop-img">
             </div>
         </div>
     </div>
 
-    <script>
-        // DOM Elements
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const preview = document.getElementById('preview');
-        const previewImage = document.getElementById('previewImage');
-        const processBtn = document.getElementById('processBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const loading = document.getElementById('loading');
-        const results = document.getElementById('results');
-        const readingValue = document.getElementById('readingValue');
-        const confidenceValue = document.getElementById('confidenceValue');
-        const resultImage = document.getElementById('resultImage');
-        const imagePlaceholder = document.getElementById('imagePlaceholder');
-        const errorMessage = document.getElementById('errorMessage');
-        const successMessage = document.getElementById('successMessage');
-        const debugInfo = document.getElementById('debugInfo');
-        const statusIndicator = document.getElementById('statusIndicator');
-        
-        let currentFile = null;
-        
-        // Initialize
-        updateStatus();
-        
-        // Event Listeners
-        uploadArea.addEventListener('click', () => fileInput.click());
-        
-        fileInput.addEventListener('change', handleFileSelect);
-        
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#3498db';
-            uploadArea.style.background = '#f8fafc';
-        });
-        
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.style.borderColor = '#bdc3c7';
-            uploadArea.style.background = 'white';
-        });
-        
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#bdc3c7';
-            uploadArea.style.background = 'white';
-            
-            if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
-                handleFileSelect();
-            }
-        });
-        
-        processBtn.addEventListener('click', processImage);
-        resetBtn.addEventListener('click', resetForm);
-        
-        // Functions
-        function updateStatus() {
-            fetch('/')
-                .then(response => {
-                    statusIndicator.textContent = 'Model Status: Ready';
-                    statusIndicator.style.background = '#d4edda';
-                    statusIndicator.style.color = '#155724';
-                })
-                .catch(error => {
-                    statusIndicator.textContent = 'Model Status: Server Error';
-                    statusIndicator.style.background = '#f8d7da';
-                    statusIndicator.style.color = '#721c24';
-                });
+</div>
+
+<script>
+const statusEl = document.getElementById("status");
+const uploadArea = document.getElementById("uploadArea");
+const fileInput = document.getElementById("fileInput");
+const processBtn = document.getElementById("processBtn");
+
+// 1️⃣ Poll model status every 2 seconds
+async function updateStatus() {
+    try {
+        const res = await fetch("/status");
+        const data = await res.json();
+
+        if (data.yolo_loaded) {
+            statusEl.textContent = "Statut du modèle : prêt";
+            statusEl.style.background = "#d4edda";
+            statusEl.style.color = "#155724";
+        } else {
+            statusEl.textContent = "Statut du modèle : chargement du modèle…";
+            statusEl.style.background = "#fff3cd";
+            statusEl.style.color = "#856404";
         }
-        
-        function showMessage(element, message) {
-            element.textContent = message;
-            element.style.display = 'block';
-            setTimeout(() => {
-                element.style.display = 'none';
-            }, 5000);
+    } catch {
+        statusEl.textContent = "Statut du modèle : hors ligne";
+        statusEl.style.background = "#f8d7da";
+        statusEl.style.color = "#721c24";
+    }
+}
+setInterval(updateStatus, 2000);
+updateStatus();
+
+// 2️⃣ File upload & preview
+uploadArea.onclick = () => fileInput.click();
+fileInput.onchange = () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById("previewImg").src = e.target.result;
+        document.getElementById("preview").style.display = "block";
+        processBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+};
+
+// 3️⃣ Analyze button
+processBtn.onclick = async () => {
+    processBtn.disabled = true;
+    document.getElementById("loading").style.display = "block";
+    document.getElementById("results").style.display = "none";
+
+    const formData = new FormData();
+    formData.append("image", fileInput.files[0]);
+
+    try {
+        const res = await fetch("/upload", { method: "POST", body: formData });
+        const data = await res.json();
+
+        if (!data.success) {
+            alert("Erreur : " + data.error);
+            location.reload();
+            return;
         }
-        
-        function handleFileSelect() {
-            if (!fileInput.files.length) return;
-            
-            currentFile = fileInput.files[0];
-            
-            // Validate file size (max 16MB)
-            if (currentFile.size > 16 * 1024 * 1024) {
-                showMessage(errorMessage, 'File too large! Maximum size is 16MB.');
-                resetForm();
-                return;
-            }
-            
-            // Validate file type
-            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/bmp'];
-            if (!validTypes.includes(currentFile.type)) {
-                showMessage(errorMessage, 'Invalid file type! Please use JPG, PNG, or BMP.');
-                resetForm();
-                return;
-            }
-            
-            // Show preview
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                preview.style.display = 'block';
-                
-                // Show file info
-                document.getElementById('fileName').textContent = 
-                    `${currentFile.name} (${(currentFile.size / 1024).toFixed(0)} KB)`;
-            };
-            reader.readAsDataURL(currentFile);
-            
-            // Enable process button
-            processBtn.disabled = false;
-            
-            // Update upload area
-            uploadArea.innerHTML = `
-                <div class="upload-icon">✅</div>
-                <div class="upload-text">${currentFile.name}</div>
-                <div class="upload-subtext">${(currentFile.size / 1024).toFixed(0)} KB • Click to change</div>
-            `;
-            
-            showMessage(successMessage, 'Image selected. Click "Process Image" to analyze.');
+
+        const t = Date.now(); // prevent caching
+        document.getElementById("reading").textContent = data.reading;
+        document.getElementById("confidence").textContent = data.confidence;
+        document.getElementById("resultImg").src = "/uploads/" + data.image_url.split("/").pop() + "?t=" + t;
+
+        if (data.crops && data.crops.length > 0) {
+            document.getElementById("cropImg").src = "/uploads/" + data.crops[0] + "?t=" + t;
         }
-        
-        async function processImage() {
-            if (!currentFile) return;
-            
-            // Show loading, hide results
-            loading.style.display = 'block';
-            results.style.display = 'none';
-            processBtn.disabled = true;
-            
-            // Update loading steps
-            const steps = ['step3', 'step4', 'step5'];
-            steps.forEach((stepId, index) => {
-                setTimeout(() => {
-                    document.getElementById(stepId).innerHTML = '⏳ ' + document.getElementById(stepId).textContent.substring(2);
-                }, index * 1000);
-            });
-            
-            // Create FormData
-            const formData = new FormData();
-            formData.append('image', currentFile);
-            
-            try {
-                // Send to server
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                // Show debug info
-                debugInfo.style.display = 'block';
-                debugInfo.textContent = `Status: ${response.status} ${response.statusText}`;
-                
-                const data = await response.json();
-                debugInfo.textContent += `\nResponse: ${JSON.stringify(data, null, 2)}`;
-                
-                if (data.success) {
-                    // Display results
-                    readingValue.textContent = data.reading || '00000000';
-                    confidenceValue.textContent = data.confidence || '0%';
-                    
-                    // Update confidence bar color
-                    const confidencePercent = parseFloat(data.confidence) || 0;
-                    if (confidencePercent > 90) {
-                        confidenceValue.style.color = '#27ae60';
-                    } else if (confidencePercent > 70) {
-                        confidenceValue.style.color = '#f39c12';
-                    } else {
-                        confidenceValue.style.color = '#e74c3c';
-                    }
-                    
-                    // Display image if URL is provided
-                    if (data.image_url) {
-                        imagePlaceholder.style.display = 'none';
-                        resultImage.style.display = 'block';
-                        resultImage.src = data.image_url;
-                        
-                        // Add timestamp to prevent caching
-                        resultImage.src = data.image_url + '?t=' + new Date().getTime();
-                        
-                        debugInfo.textContent += `\nImage URL: ${data.image_url}`;
-                    }
-                    
-                    // Hide loading, show results
-                    loading.style.display = 'none';
-                    results.style.display = 'block';
-                    
-                    // Show success message
-                    showMessage(successMessage, `Success! Detected ${data.reading.length} digits with ${data.confidence} confidence.`);
-                    
-                    // Scroll to results
-                    results.scrollIntoView({ behavior: 'smooth' });
-                    
-                } else {
-                    showMessage(errorMessage, 'Error: ' + (data.error || 'Unknown error'));
-                    resetForm();
-                }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                debugInfo.textContent += `\nError: ${error.message}`;
-                showMessage(errorMessage, 'Connection error. Please check if server is running.');
-                resetForm();
-            }
-        }
-        
-        function resetForm() {
-            // Reset all elements
-            fileInput.value = '';
-            preview.style.display = 'none';
-            processBtn.disabled = true;
-            loading.style.display = 'none';
-            results.style.display = 'none';
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
-            currentFile = null;
-            
-            // Reset image display
-            imagePlaceholder.style.display = 'flex';
-            resultImage.style.display = 'none';
-            resultImage.src = '';
-            
-            // Reset loading steps
-            document.getElementById('step3').innerHTML = '○ Detecting digit area';
-            document.getElementById('step4').innerHTML = '○ Extracting individual digits';
-            document.getElementById('step5').innerHTML = '○ Recognizing with CNN';
-            
-            // Reset upload area
-            uploadArea.innerHTML = `
-                <div class="upload-icon">📷</div>
-                <div class="upload-text">Click to select or drag & drop image</div>
-                <div class="upload-subtext">Supported formats: JPG, PNG, JPEG</div>
-            `;
-            
-            uploadArea.style.borderColor = '#bdc3c7';
-            uploadArea.style.background = 'white';
-            
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    </script>
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("results").style.display = "block";
+
+    } catch (err) {
+        alert("Échec de l’upload. Le serveur est-il démarré ?");
+        console.error(err);
+        location.reload();
+    }
+};
+
+// 4️⃣ Reset button
+document.getElementById("resetBtn").onclick = () => location.reload();
+</script>
+
 </body>
 </html>
