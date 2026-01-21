@@ -3,8 +3,22 @@
 This mini project uses a Convolutional Neural Network (CNN) to detect and recognize digits from water meter images. It also includes a Flask web app to upload images and display predictions. YOLOv8 can be optionally used for object detection and preprocessing of the meter region.
 
 ## **Team**
-- Abdelaziz Ariri
-- Ossama Ettaqafi
+<p align="center">
+  <a href="https://github.com/abdelaziz-ariri">
+    <img src="https://github.com/abdelaziz-ariri.png" width="110" style="border-radius:50%" />
+  </a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/ossama-ettaqafi">
+    <img src="https://github.com/ossama-ettaqafi.png" width="110" style="border-radius:50%" />
+  </a>
+</p>
+
+<p align="center">
+  <b>Abdelaziz Ariri</b>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <b>Ossama Ettaqafi</b>
+</p>
+
 
 ## **Project Structure**
 ```
