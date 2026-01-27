@@ -1,5 +1,8 @@
 # Precise Water Meter OCR
 
+![⚠ Experimental](https://img.shields.io/badge/Status-Experimental-orange)
+![🛠 Work in Progress](https://img.shields.io/badge/Development-WIP-blue)
+
 A **Flask-based web application** for precise reading extraction from water meter images using **OpenCV** and **Tesseract OCR**.
 The application focuses on **high-accuracy digit detection**, offering per-digit confidence and annotated visual output.
 
