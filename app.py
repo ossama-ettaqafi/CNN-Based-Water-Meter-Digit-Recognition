@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 import pytesseract
 import re
+from collections import Counter
 
 # ================== TESSERACT CONFIG ==================
 pytesseract.pytesseract.tesseract_cmd = r"D:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -21,229 +22,202 @@ app.config["DEBUG_FOLDER"] = DEBUG_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB max file size
 
 # =====================================================
-# FOCUSED METER READING EXTRACTION
+# SMART DIGIT DETECTION WITH VISUALIZATION
 # =====================================================
-def find_meter_reading_area(image):
-    """Find the exact area containing the meter reading"""
-    h, w = image.shape[:2]
-    
-    # Convert to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
-    # Based on your image structure:
-    # 1. Look for "FERRO" text in the top-middle
-    # 2. The reading is right below it
-    
-    # Define search areas
-    ferro_area = gray[int(h*0.15):int(h*0.25), int(w*0.4):int(w*0.6)]
-    reading_area = gray[int(h*0.25):int(h*0.40), int(w*0.2):int(w*0.8)]
-    
-    return reading_area, (int(w*0.2), int(h*0.25), int(w*0.8), int(h*0.40))
-
-def extract_reading_from_area(roi_gray, roi_coords, original_image):
-    """Extract the reading from the specific area"""
+def detect_digits_with_boxes(image_roi, roi_coords, full_image):
+    """Detect individual digits and return their positions and values"""
     x1, y1, x2, y2 = roi_coords
-    h_roi, w_roi = roi_gray.shape
+    h_roi, w_roi = image_roi.shape
     
-    output = original_image.copy()
-    
-    # Save debug ROI
-    debug_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    debug_path = os.path.join(DEBUG_FOLDER, f"{debug_timestamp}_roi.jpg")
-    cv2.imwrite(debug_path, roi_gray)
-    
-    # METHOD 1: Direct OCR on the ROI
-    config_digits = "--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789"
-    text = pytesseract.image_to_string(roi_gray, config=config_digits).strip()
-    
-    print(f"Direct OCR text: '{text}'")
-    
-    # Look for 8-digit sequences
-    digit_sequences = re.findall(r'\d{8}', text)
-    if digit_sequences:
-        reading = digit_sequences[0]
-        print(f"Found 8-digit sequence: {reading}")
-    else:
-        # METHOD 2: Look for digits followed by m³
-        # First enhance the image
-        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-        enhanced = clahe.apply(roi_gray)
-        
-        # Try to find m³ symbol to locate reading
-        config_m3 = "--psm 6 --oem 3"
-        text_m3 = pytesseract.image_to_string(enhanced, config=config_m3)
-        print(f"Enhanced OCR text: '{text_m3}'")
-        
-        # Look for patterns like "00002188 m³"
-        m3_pattern = re.search(r'(\d+)\s*m³', text_m3)
-        if m3_pattern:
-            digits = m3_pattern.group(1)
-            reading = digits.rjust(8, "0")[:8]
-            print(f"Found reading with m³: {digits} -> {reading}")
-        else:
-            # METHOD 3: Look for any digits in the area
-            all_digits = re.findall(r'\d', text_m3)
-            if len(all_digits) >= 6:  # At least 6 digits
-                reading = ''.join(all_digits[:8]).ljust(8, "0")
-                print(f"Extracted digits: {reading}")
-            else:
-                # Last resort: Try to find the 8 largest digit-like blobs
-                reading = extract_by_blob_detection(roi_gray, output, roi_coords)
-                print(f"Blob detection result: {reading}")
-    
-    # Draw ROI
-    cv2.rectangle(output, (x1, y1), (x2, y2), (255, 0, 0), 2)
-    cv2.putText(output, "Reading Area", 
-               (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 
-               0.7, (255, 0, 0), 2)
-    
-    # Draw reading on image
-    cv2.putText(output, reading,
-               (x1 + 10, y1 + 30),
-               cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
-    
-    return reading, output, debug_timestamp
-
-def extract_by_blob_detection(roi_gray, output, roi_coords):
-    """Extract digits by detecting individual digit blobs"""
-    x1, y1, x2, y2 = roi_coords
-    h_roi, w_roi = roi_gray.shape
-    
-    # Enhance image
+    # Enhance the ROI for better detection
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-    enhanced = clahe.apply(roi_gray)
+    enhanced = clahe.apply(image_roi)
     
     # Threshold to get dark digits on light background
     _, binary = cv2.threshold(enhanced, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     
-    # Clean up
+    # Clean up noise
     kernel = np.ones((2, 2), np.uint8)
-    binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+    binary_clean = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+    binary_clean = cv2.morphologyEx(binary_clean, cv2.MORPH_OPEN, kernel)
     
-    # Find contours
-    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Find contours of potential digits
+    contours, _ = cv2.findContours(binary_clean, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
-    digit_contours = []
+    digit_info = []
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
         area = cv2.contourArea(contour)
         
         # Filter for digit-like shapes
-        if h > 0 and area > 20:
-            aspect_ratio = w / h
-            if 0.2 < aspect_ratio < 1.0 and h > h_roi * 0.3:
-                digit_contours.append((x, y, w, h, x + w/2))
+        if (h > h_roi * 0.3 and  # Minimum height relative to ROI
+            w > w_roi * 0.03 and   # Minimum width
+            area > 50 and          # Minimum area
+            0.2 < w/h < 1.2):     # Reasonable aspect ratio for digits
+            
+            # Add padding around the digit
+            pad_x = int(w * 0.2)
+            pad_y = int(h * 0.2)
+            
+            # Ensure we don't go out of bounds
+            x_start = max(0, x - pad_x)
+            y_start = max(0, y - pad_y)
+            x_end = min(w_roi, x + w + pad_x)
+            y_end = min(h_roi, y + h + pad_y)
+            
+            # Extract digit region
+            digit_roi = enhanced[y_start:y_end, x_start:x_end]
+            
+            # OCR on the individual digit
+            config_digit = "--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789"
+            digit_text = pytesseract.image_to_string(digit_roi, config=config_digit).strip()
+            
+            # If OCR fails, try with different preprocessing
+            if not digit_text.isdigit():
+                # Try with binarization
+                _, digit_binary = cv2.threshold(digit_roi, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                digit_text = pytesseract.image_to_string(digit_binary, config=config_digit).strip()
+            
+            if digit_text and digit_text.isdigit():
+                digit = digit_text[0]
+                confidence = 85.0  # Base confidence for detected digits
+            else:
+                digit = "?"
+                confidence = 30.0
+            
+            # Calculate absolute coordinates on full image
+            abs_x = x1 + x_start
+            abs_y = y1 + y_start
+            abs_w = x_end - x_start
+            abs_h = y_end - y_start
+            
+            digit_info.append({
+                'x': abs_x,
+                'y': abs_y,
+                'w': abs_w,
+                'h': abs_h,
+                'center_x': abs_x + abs_w // 2,
+                'digit': digit,
+                'confidence': confidence,
+                'roi': digit_roi
+            })
     
-    # Sort left to right
-    digit_contours.sort(key=lambda c: c[4])
+    # Sort digits by their horizontal position (left to right)
+    digit_info.sort(key=lambda d: d['center_x'])
     
-    reading = ""
-    for idx, (x, y, w, h, _) in enumerate(digit_contours[:8]):
-        # Extract digit
-        digit_img = roi_gray[max(0, y-2):min(h_roi, y+h+2),
-                            max(0, x-2):min(w_roi, x+w+2)]
-        
-        # OCR this digit
-        config = "--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789"
-        digit_text = pytesseract.image_to_string(digit_img, config=config).strip()
-        
-        if digit_text and digit_text.isdigit():
-            reading += digit_text[0]
-        else:
-            reading += "0"
-        
-        # Draw box
-        abs_x = x1 + max(0, x-2)
-        abs_y = y1 + max(0, y-2)
-        cv2.rectangle(output,
-                     (abs_x, abs_y),
-                     (abs_x + min(w_roi, x+w+2) - max(0, x-2),
-                      abs_y + min(h_roi, y+h+2) - max(0, y-2)),
-                     (0, 255, 0), 2)
-        
-        cv2.putText(output, reading[-1] if reading else "?",
-                   (abs_x, abs_y - 5),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+    return digit_info
+
+def draw_digit_boxes(full_image, digit_info, reading):
+    """Draw green boxes around detected digits and label them"""
+    output = full_image.copy()
     
-    # Ensure 8 digits
-    reading = reading.ljust(8, "0")[:8]
+    # Draw green boxes for each detected digit
+    for i, digit_data in enumerate(digit_info):
+        x, y, w, h = digit_data['x'], digit_data['y'], digit_data['w'], digit_data['h']
+        
+        # Draw green rectangle around digit
+        cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        
+        # Label with digit value
+        label = f"{digit_data['digit']}"
+        cv2.putText(output, label,
+                   (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                   0.7, (0, 255, 0), 2)
+        
+        # Optional: Add index number
+        cv2.putText(output, f"#{i+1}",
+                   (x + w - 20, y - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                   0.5, (0, 200, 0), 1)
     
-    return reading
+    # Also draw the complete reading at the top
+    if reading:
+        cv2.putText(output, f"Reading: {reading}",
+                   (20, 40), cv2.FONT_HERSHEY_SIMPLEX,
+                   1.2, (0, 255, 255), 3)
+    
+    return output
 
 # =====================================================
-# SMART READING EXTRACTION WITH CONTEXT
+# SMART READING EXTRACTION WITH DIGIT DETECTION
 # =====================================================
-def extract_meter_reading_smart(image):
-    """Smart extraction using context from the meter image"""
+def extract_meter_reading_with_digits(image):
+    """Smart extraction with individual digit detection and visualization"""
     h, w = image.shape[:2]
     
-    # Strategy 1: Look for reading near "m³" text
     # Convert to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
-    # Search in the area where reading should be (top-middle)
-    search_roi = gray[int(h*0.22):int(h*0.38), int(w*0.25):int(w*0.75)]
+    # Define the ROI where digits are expected (based on your meter layout)
+    # Adjust these values based on your specific meter images
+    roi_y1, roi_y2 = int(h * 0.22), int(h * 0.38)
+    roi_x1, roi_x2 = int(w * 0.25), int(w * 0.75)
     
-    # Save debug
+    roi = gray[roi_y1:roi_y2, roi_x1:roi_x2]
+    roi_coords = (roi_x1, roi_y1, roi_x2, roi_y2)
+    
+    # Save debug ROI
     debug_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    debug_path = os.path.join(DEBUG_FOLDER, f"{debug_timestamp}_search.jpg")
-    cv2.imwrite(debug_path, search_roi)
+    debug_path = os.path.join(DEBUG_FOLDER, f"{debug_timestamp}_roi.jpg")
+    cv2.imwrite(debug_path, roi)
     
-    # Try multiple OCR strategies
-    readings = []
+    # Detect individual digits with their positions
+    digit_info = detect_digits_with_boxes(roi, roi_coords, image)
     
-    # Strategy A: Look for digits followed by m³
-    config_a = "--psm 6 --oem 3"
-    text_a = pytesseract.image_to_string(search_roi, config=config_a)
-    print(f"Strategy A OCR: '{text_a}'")
+    # Extract the reading from detected digits
+    detected_digits = ''.join([d['digit'] for d in digit_info if d['digit'].isdigit()])
     
-    # Look for pattern: digits + optional spaces + m³
-    pattern_a = re.search(r'(\d[\d\s]*?)\s*m³', text_a)
-    if pattern_a:
-        digits = re.sub(r'\s', '', pattern_a.group(1))
-        if len(digits) >= 6:
-            reading = digits.rjust(8, "0")[:8]
-            readings.append(reading)
-            print(f"Found with m³ pattern: {reading}")
+    # Try OCR on the whole ROI as fallback
+    config_full = "--psm 6 --oem 3"
+    full_text = pytesseract.image_to_string(roi, config=config_full)
     
-    # Strategy B: Look for 8 consecutive digits
-    pattern_b = re.search(r'(\d{8})', text_a)
-    if pattern_b:
-        readings.append(pattern_b.group(1))
-        print(f"Found 8-digit pattern: {pattern_b.group(1)}")
+    # Look for patterns in the full text
+    reading = ""
+    confidence = 0.0
     
-    # Strategy C: Try digits-only OCR
-    config_c = "--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789 "
-    text_c = pytesseract.image_to_string(search_roi, config=config_c).replace(" ", "")
-    if len(text_c) >= 6:
-        reading = text_c[:8].ljust(8, "0")
-        readings.append(reading)
-        print(f"Digits-only OCR: {reading}")
+    # Pattern 1: Look for digits followed by m³
+    pattern_m3 = re.search(r'(\d[\d\s]*?)\s*m³', full_text)
+    if pattern_m3:
+        digits = re.sub(r'\s', '', pattern_m3.group(1))
+        reading = digits.rjust(8, "0")[:8]
+        confidence = 80.0
+        print(f"Found with m³ pattern: {reading}")
     
-    # Choose the most likely reading
-    # Prefer readings that look like meter readings (often starting with 0)
-    if readings:
-        # Count occurrences
-        from collections import Counter
-        freq = Counter(readings)
-        
-        # Prefer readings that start with 0 (common for meter readings)
-        valid_readings = [r for r in readings if r.startswith('0')]
-        if valid_readings:
-            # Take the most common valid reading
-            freq_valid = Counter(valid_readings)
-            best_reading = freq_valid.most_common(1)[0][0]
-        else:
-            # Take the most common reading
-            best_reading = freq.most_common(1)[0][0]
-        
-        confidence = 70.0  # Good confidence if we found something
+    # Pattern 2: Look for 8 consecutive digits
+    elif re.search(r'(\d{8})', full_text):
+        match = re.search(r'(\d{8})', full_text)
+        reading = match.group(1)
+        confidence = 75.0
+        print(f"Found 8-digit pattern: {reading}")
+    
+    # Pattern 3: Use detected individual digits
+    elif len(detected_digits) >= 6:
+        reading = detected_digits[:8].ljust(8, "0")
+        confidence = min(90.0, 70.0 + len(detected_digits) * 3)
+        print(f"Using detected digits: {reading}")
+    
+    # Pattern 4: Digits-only OCR
     else:
-        # Fallback to fixed pattern
-        best_reading = "00000000"
-        confidence = 30.0
+        config_digits = "--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789 "
+        digits_text = pytesseract.image_to_string(roi, config=config_digits).replace(" ", "")
+        if len(digits_text) >= 6:
+            reading = digits_text[:8].ljust(8, "0")
+            confidence = 65.0
+            print(f"Digits-only OCR: {reading}")
+        else:
+            reading = "00000000"
+            confidence = 30.0
+            print(f"No reliable reading found, using default: {reading}")
     
-    return best_reading, confidence
+    # Create visualization with green boxes
+    output_image = draw_digit_boxes(image, digit_info, reading)
+    
+    # Draw the main ROI rectangle
+    cv2.rectangle(output_image, (roi_x1, roi_y1), (roi_x2, roi_y2), (255, 0, 0), 2)
+    cv2.putText(output_image, "Reading Area", 
+               (roi_x1, roi_y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 
+               0.7, (255, 0, 0), 2)
+    
+    return reading, confidence, output_image, digit_info, debug_timestamp
 
 # =====================================================
 # MAIN PROCESSING
@@ -257,70 +231,73 @@ def process_image(image_path):
     
     h, w = image.shape[:2]
     
-    # Try smart extraction first
-    reading, confidence = extract_meter_reading_smart(image)
+    # Extract reading with digit detection
+    reading, confidence, output_image, digit_info, debug_timestamp = extract_meter_reading_with_digits(image)
     
     print(f"Final reading: {reading}, Confidence: {confidence}")
+    print(f"Detected {len(digit_info)} digit(s)")
     
-    # Create output image
-    output = image.copy()
-    
-    # Draw the reading area
-    y1, y2 = int(h*0.22), int(h*0.38)
-    x1, x2 = int(w*0.25), int(w*0.75)
-    cv2.rectangle(output, (x1, y1), (x2, y2), (255, 0, 0), 2)
-    cv2.putText(output, "Reading Area", 
-               (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 
-               0.7, (255, 0, 0), 2)
-    
-    # Draw the reading
-    cv2.putText(output, f"Reading: {reading}",
-               (20, 40), cv2.FONT_HERSHEY_SIMPLEX,
-               1.2, (0, 255, 255), 3)
-    
-    cv2.putText(output, f"Confidence: {confidence:.1f}%",
+    # Add confidence text
+    cv2.putText(output_image, f"Confidence: {confidence:.1f}%",
                (20, 80), cv2.FONT_HERSHEY_SIMPLEX,
                0.8, (0, 255, 0), 2)
     
     # Add timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cv2.putText(output, f"Processed: {timestamp}",
+    cv2.putText(output_image, f"Processed: {timestamp}",
                (20, h-20), cv2.FONT_HERSHEY_SIMPLEX,
                0.5, (200, 200, 200), 1)
+    
+    # Add counter for detected digits
+    cv2.putText(output_image, f"Digits detected: {len(digit_info)}",
+               (w - 200, 30), cv2.FONT_HERSHEY_SIMPLEX,
+               0.6, (0, 200, 255), 2)
     
     # Save result
     filename = f"result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
     result_path = os.path.join(UPLOAD_FOLDER, filename)
-    cv2.imwrite(result_path, output)
+    cv2.imwrite(result_path, output_image)
     
-    # Prepare response
+    # Prepare digit details for response
     digit_details = []
     for i, digit in enumerate(reading):
-        # Simple confidence distribution
-        digit_conf = confidence * (0.8 + (i/40))  # Slightly vary confidence
-        digit_conf = min(100, max(0, digit_conf))
+        # Find if this digit was individually detected
+        detected = False
+        digit_confidence = confidence * 0.9  # Start with base confidence
+        
+        # Check if we have a detected digit at this position
+        if i < len(digit_info) and digit_info[i]['digit'].isdigit():
+            if digit_info[i]['digit'] == digit:
+                detected = True
+                digit_confidence = digit_info[i]['confidence']
         
         digit_details.append({
             'position': i+1,
             'digit': digit,
-            'confidence': f"{digit_conf:.1f}%",
-            'status': '✓' if digit_conf > 70 else '⚠' if digit_conf > 50 else '✗'
+            'confidence': f"{digit_confidence:.1f}%",
+            'detected': detected,
+            'status': '✓' if detected else '⚠' if digit_confidence > 60 else '✗',
+            'box_coordinates': {
+                'x': digit_info[i]['x'] if i < len(digit_info) else 0,
+                'y': digit_info[i]['y'] if i < len(digit_info) else 0,
+                'width': digit_info[i]['w'] if i < len(digit_info) else 0,
+                'height': digit_info[i]['h'] if i < len(digit_info) else 0
+            } if i < len(digit_info) else None
         })
-    
-    debug_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     
     return {
         'reading': reading,
         'confidence': f"{confidence:.1f}%",
         'image_url': f"/uploads/{filename}",
-        'debug_url': f"/debug/{debug_timestamp}_search.jpg",
+        'debug_url': f"/debug/{debug_timestamp}_roi.jpg",
         'digit_details': digit_details,
+        'digit_count': len(digit_info),
         'timestamp': timestamp,
         'debug_timestamp': debug_timestamp
     }
 
 # =====================================================
-# FLASK ROUTES
+# FLASK ROUTES (remain the same)
 # =====================================================
 @app.route("/")
 def index():
@@ -386,13 +363,13 @@ def list_debug_images():
 
 # =====================================================
 if __name__ == "__main__":
-    print("🚰 SMART WATER METER OCR")
+    print("🚰 SMART WATER METER OCR WITH DIGIT DETECTION")
     print("🌐 http://127.0.0.1:5000")
     print("📁 Upload folder:", os.path.abspath(UPLOAD_FOLDER))
-    print("💡 This version specifically looks for:")
-    print("   - 8-digit sequences")
-    print("   - Digits followed by 'm³'")
-    print("   - Focuses on the top-middle area only")
-    print("   - Ignores serial numbers at the bottom")
+    print("💡 Features:")
+    print("   - Individual digit detection with green boxes")
+    print("   - 8-digit meter reading extraction")
+    print("   - Confidence scoring per digit")
+    print("   - Visual feedback for detection")
     
     app.run(debug=True, host='0.0.0.0', port=5000)
