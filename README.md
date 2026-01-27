@@ -1,112 +1,177 @@
-# CNN-Based Water Meter Digit Recognition
+# Precise Water Meter OCR
 
-This mini project uses a Convolutional Neural Network (CNN) to detect and recognize digits from water meter images. It also includes a Flask web app to upload images and display predictions. YOLOv8 can be optionally used for object detection and preprocessing of the meter region.
+A **Flask-based web application** for precise reading extraction from water meter images using **OpenCV** and **Tesseract OCR**.
+The application focuses on **high-accuracy digit detection**, offering per-digit confidence and annotated visual output.
 
-## **Team**
-<p align="center">
-  <a href="https://github.com/abdelaziz-ariri">
-    <img src="https://github.com/abdelaziz-ariri.png" width="110" style="border-radius:50%" />
-  </a>
-  &nbsp;&nbsp;&nbsp;
-  <a href="https://github.com/ossama-ettaqafi">
-    <img src="https://github.com/ossama-ettaqafi.png" width="110" style="border-radius:50%" />
-  </a>
-</p>
+---
 
-<p align="center">
-  <b>Abdelaziz Ariri</b>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <b>Ossama Ettaqafi</b>
-</p>
+## 🔹 Features
 
+* Targeted **Region of Interest (ROI)** for precise meter digit extraction
+* **Contrast enhancement** and **adaptive thresholding** for better digit isolation
+* **Contour-based digit detection** with shape and size filtering
+* **Individual digit OCR** for maximum accuracy
+* **Confidence scoring** for each digit and overall reading
+* Annotated output image showing:
 
-## **Project Structure**
-```
+  * Detected digits
+  * Bounding boxes
+  * Overall reading
+  * Confidence
+* Debug images saved for intermediate steps
+* JSON API response with detailed digit-level information
 
-CNN-Based-Water-Meter-Digit-Recognition/
-│
-├─ app.py              # Flask web application
-├─ test.py             # Script to test the model on images
-├─ yolov8n.pt          # YOLOv8 model (optional for meter detection)
-├─ requirements.txt    # Project dependencies
-├─ images/             # Example images
-└─ README.md           # This file
+---
 
-````
+## 🔹 App Screenshot
 
-## **Installation**
+Here’s an example of the app in action:
 
-1. Clone the repository:
+<img width="600" alt="App Screenshot" src="https://github.com/user-attachments/assets/d5e9bf85-59e9-4393-b9f7-36128abc3284" />
 
-```bash
-git clone https://github.com/ossama-ettaqafi/CNN-Based-Water-Meter-Digit-Recognition.git
-cd CNN-Based-Water-Meter-Digit-Recognition
-````
+**Description:**
 
-2. Create a virtual environment (Python 3.10 recommended):
+* **Upload Section:** Upload water meter images.
+* **Result Display:** Annotated meter image with detected digits and reading.
+* **Digit Details:** Per-digit confidence and bounding boxes (optional, shown in debug images).
+* **JSON Output:** API returns meter reading, confidence, and annotated image URL.
 
-```bash
-python -m venv venv
-.\venv\Scripts\Activate.ps1   # Windows PowerShell
-```
+---
 
-3. Upgrade pip:
+## 🔹 Requirements
+
+* Python 3.10+
+* Flask
+* OpenCV (`cv2`)
+* pytesseract
+* numpy
+* Pillow (optional for image handling)
+
+### Install dependencies
 
 ```bash
-python -m pip install --upgrade pip setuptools wheel
+pip install flask opencv-python pytesseract numpy
 ```
 
-4. Install dependencies:
+**Tesseract OCR** must be installed:
+[Download Tesseract](https://github.com/tesseract-ocr/tesseract)
 
-```bash
-pip install -r requirements.txt
+Set the path in the app:
+
+```python
+pytesseract.pytesseract.tesseract_cmd = r"D:\Program Files\Tesseract-OCR\tesseract.exe"
 ```
 
-> ⚠️ **Note:** Do not install standalone Keras >= 3.x. TensorFlow 2.14 includes Keras compatible with Python 3.10.
+---
 
-## **Usage**
+## 🔹 Project Structure
 
-### **Run Flask app**
+```
+.
+├── app.py                # Main Flask application
+├── uploads/              # Uploaded and result images
+├── debug/                # Debug intermediate images
+├── templates/
+│   └── index.html        # Frontend template
+├── static/               # Optional CSS/JS files
+└── README.md             # This file
+```
+
+---
+
+## 🔹 Usage
+
+### Start the server
 
 ```bash
 python app.py
 ```
 
-1. Open your browser at `http://127.0.0.1:5000/`
-2. Upload an image of a water meter
-3. The app will display the detected digits
+Visit: [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
-### **Test CNN model directly**
+---
+
+### API Endpoints
+
+| Route                 | Method | Description                        |
+| --------------------- | ------ | ---------------------------------- |
+| `/`                   | GET    | Frontend page for uploading images |
+| `/upload`             | POST   | Upload image for processing        |
+| `/uploads/<filename>` | GET    | Serve processed result image       |
+| `/debug/<filename>`   | GET    | Serve intermediate debug image     |
+| `/debug_images`       | GET    | List last 10 debug images          |
+| `/health`             | GET    | Health check                       |
+
+---
+
+### Example Upload Request (cURL)
 
 ```bash
-python test.py
+curl -X POST -F "image=@meter.jpg" http://127.0.0.1:5000/upload
 ```
 
-* Loads an image from the `images/` folder
-* Preprocesses it
-* Predicts digits using `model_tf/`
+**Sample JSON Response**
 
-## **Dependencies**
+```json
+{
+  "success": true,
+  "reading": "00012345",
+  "confidence": "88.5%",
+  "image_url": "/uploads/result_20260127_170102.jpg",
+  "debug_url": "/debug/20260127_170102_original_roi.jpg",
+  "digit_count": 8,
+  "digit_details": [
+    {"position":1,"digit":"0","confidence":"92.0%","detected":true,"status":"✓"},
+    ...
+  ],
+  "timestamp": "2026-01-27 17:01:02",
+  "debug_timestamp": "20260127_170102"
+}
+```
 
-* Python 3.10
-* TensorFlow 2.14 (includes Keras 2.14.x)
-* NumPy
-* Matplotlib
-* Pillow
-* OpenCV
-* Flask >= 3.1.2
-* PyTorch >= 2.2.0
-* Torchvision >= 0.17.1
-* Torchaudio >= 2.2.0
-* Ultralytics (YOLOv8) >= 8.0.150
+---
 
-## **Notes**
+## 🔹 How It Works (Pipeline)
 
-* Python 3.10 is recommended for TensorFlow compatibility.
-* YOLOv8 is optional but helps improve meter digit localization.
-* Make sure your virtual environment is activated before running scripts.
-* Your `model.keras` should be converted to **TensorFlow format** (`model_tf/`) for Python 3.10 compatibility.
+**High-level pipeline:**
 
-## **License**
+```
+Upload → ROI → Enhance → Segment → OCR → Assemble Reading → Visualize → Output
+```
 
-This project is for educational and research purposes.
+**Step Description:**
+
+1. **Upload:** User uploads water meter image
+2. **ROI:** Extract the region containing digits
+3. **Enhance:** Improve contrast for clearer digit detection
+4. **Segment:** Apply thresholding and contour detection to isolate digits
+5. **OCR:** Recognize each digit individually
+6. **Assemble Reading:** Combine digits into the final reading
+7. **Visualize:** Annotate digits and reading on the image
+8. **Output:** Return JSON response with reading, confidence, and image URLs
+
+---
+
+## 🔹 Debugging & Development
+
+* Debug images stored in `debug/` folder:
+
+  * Original ROI
+  * Binary threshold image
+  * Individual digit crops
+* Access last 10 debug images: `/debug_images`
+
+---
+
+## 🔹 Notes
+
+* Optimized for **mechanical water meters**
+* Works best with **high-contrast black digits on white background**
+* Maximum upload size: **16 MB**
+* Confidence scoring helps flag uncertain readings for manual review
+
+---
+
+## 🔹 License
+
+MIT License – free for academic and commercial use
