@@ -7,93 +7,95 @@ import pytesseract
 import re
 from collections import Counter
 
-# ================== TESSERACT CONFIG ==================
+# ================== CONFIGURATION TESSERACT ==================
+# Chemin vers l'exécutable Tesseract (à adapter selon votre installation)
 pytesseract.pytesseract.tesseract_cmd = r"D:\Program Files\Tesseract-OCR\tesseract.exe"
 
-# ================== FLASK APP ==================
+# ================== APPLICATION FLASK ==================
 app = Flask(__name__)
 
+# Dossiers pour stocker les fichiers uploadés et les images de débogage
 UPLOAD_FOLDER = "uploads"
 DEBUG_FOLDER = "debug"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(DEBUG_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["DEBUG_FOLDER"] = DEBUG_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB max file size
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # Taille maximale de fichier : 16MB
 
 # =====================================================
-# PRECISE DIGIT DETECTION FOR WATER METERS
+# DÉTECTION PRÉCISE DES CHIFFRES POUR COMPTEURS D'EAU
 # =====================================================
 def detect_precise_digits(image_roi, roi_coords, full_image):
-    """Precisely detect individual digits in water meter display"""
+    """Détecte précisément les chiffres individuels sur l'affichage du compteur d'eau"""
     x1, y1, x2, y2 = roi_coords
     h_roi, w_roi = image_roi.shape
     
-    # Save original ROI for debugging
+    # Sauvegarde de la ROI originale pour débogage
     debug_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     debug_path = os.path.join(DEBUG_FOLDER, f"{debug_timestamp}_original_roi.jpg")
     cv2.imwrite(debug_path, image_roi)
     
-    # Step 1: Enhance contrast specifically for black digits on white background
-    # Water meters typically have high contrast black digits
+    # Étape 1 : Amélioration du contraste spécifiquement pour chiffres noirs sur fond blanc
+    # Les compteurs d'eau ont généralement des chiffres noirs à fort contraste
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     enhanced = clahe.apply(image_roi)
     
-    # Step 2: Apply adaptive thresholding to isolate digits
-    # Using Gaussian adaptive threshold works well for meter displays
+    # Étape 2 : Seuillage adaptatif pour isoler les chiffres
+    # Le seuillage adaptatif gaussien fonctionne bien pour les affichages de compteurs
     binary = cv2.adaptiveThreshold(enhanced, 255, 
                                   cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
                                   cv2.THRESH_BINARY_INV, 11, 2)
     
-    # Save binary image for debugging
+    # Sauvegarde de l'image binaire pour débogage
     binary_debug_path = os.path.join(DEBUG_FOLDER, f"{debug_timestamp}_binary.jpg")
     cv2.imwrite(binary_debug_path, binary)
     
-    # Step 3: Clean up the binary image
-    # Remove small noise
+    # Étape 3 : Nettoyage de l'image binaire
+    # Suppression du petit bruit
     kernel_clean = np.ones((2, 2), np.uint8)
     binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel_clean)
     
-    # Step 4: Find contours - these should be our digits
+    # Étape 4 : Recherche des contours - ce devraient être nos chiffres
     contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     digit_info = []
-    min_digit_height = h_roi * 0.4  # Digits should be relatively tall
-    max_digit_height = h_roi * 0.9  # But not too tall
-    min_digit_width = w_roi * 0.05  # Minimum width for a digit
+    min_digit_height = h_roi * 0.4  # Les chiffres doivent être relativement hauts
+    max_digit_height = h_roi * 0.9  # Mais pas trop hauts
+    min_digit_width = w_roi * 0.05  # Largeur minimale pour un chiffre
     
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
         area = cv2.contourArea(contour)
         
-        # Filter for digit-like characteristics:
-        # 1. Height criteria (digits are tall relative to ROI)
-        # 2. Width criteria 
-        # 3. Area criteria (not too small)
-        # 4. Aspect ratio (digits are usually taller than wide)
+        # Filtrage basé sur les caractéristiques des chiffres :
+        # 1. Critère de hauteur (les chiffres sont hauts par rapport à la ROI)
+        # 2. Critère de largeur
+        # 3. Critère de surface (pas trop petit)
+        # 4. Ratio d'aspect (les chiffres sont généralement plus hauts que larges)
         if (min_digit_height < h < max_digit_height and
             w > min_digit_width and
-            area > 100 and  # Minimum area
-            0.3 < w/h < 1.0):  # Aspect ratio for digits
+            area > 100 and  # Surface minimale
+            0.3 < w/h < 1.0):  # Ratio d'aspect pour les chiffres
             
-            # Calculate compactness (digits are less compact than other symbols)
+            # Calcul de la compacité (les chiffres sont moins compacts que d'autres symboles)
             perimeter = cv2.arcLength(contour, True)
             if perimeter > 0:
                 compactness = 4 * np.pi * area / (perimeter * perimeter)
-                # Digits typically have lower compactness (0.3-0.7)
+                # Les chiffres ont typiquement une compacité plus faible (0.3-0.7)
                 if 0.2 < compactness < 0.8:
                     
-                    # Add small padding (2 pixels) for better OCR
+                    # Ajout d'un petit padding (2 pixels) pour une meilleure OCR
                     pad = 2
                     x_start = max(0, x - pad)
                     y_start = max(0, y - pad)
                     x_end = min(w_roi, x + w + pad)
                     y_end = min(h_roi, y + h + pad)
                     
-                    # Extract the digit region from the enhanced image
+                    # Extraction de la région du chiffre depuis l'image améliorée
                     digit_roi = enhanced[y_start:y_end, x_start:x_end]
                     
-                    # Resize to consistent size for better OCR
+                    # Redimensionnement à une taille constante pour une meilleure OCR
                     if digit_roi.size > 0:
                         target_height = 60
                         aspect_ratio = w / h
@@ -102,19 +104,19 @@ def detect_precise_digits(image_roi, roi_coords, full_image):
                                                       (max(20, target_width), target_height),
                                                       interpolation=cv2.INTER_CUBIC)
                         
-                        # Apply slight Gaussian blur to reduce noise
+                        # Application d'un léger flou gaussien pour réduire le bruit
                         digit_roi_resized = cv2.GaussianBlur(digit_roi_resized, (1, 1), 0)
                         
-                        # Binarize specifically for OCR
+                        # Binarisation spécifique pour l'OCR
                         _, digit_binary = cv2.threshold(digit_roi_resized, 0, 255, 
                                                        cv2.THRESH_BINARY + cv2.THRESH_OTSU)
                         
-                        # OCR on the individual digit
+                        # OCR sur le chiffre individuel
                         config_digit = "--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789"
                         digit_text = pytesseract.image_to_string(digit_binary, 
                                                                 config=config_digit).strip()
                         
-                        # If OCR fails, try with the resized but non-binary image
+                        # Si l'OCR échoue, essayer avec l'image redimensionnée mais non binaire
                         if not digit_text.isdigit():
                             digit_text = pytesseract.image_to_string(digit_roi_resized, 
                                                                     config=config_digit).strip()
@@ -122,12 +124,12 @@ def detect_precise_digits(image_roi, roi_coords, full_image):
                         if digit_text and digit_text.isdigit():
                             digit = digit_text[0]
                             
-                            # Calculate confidence based on contour properties
-                            aspect_score = 1.0 - abs(0.6 - w/h)  # Ideal aspect ~0.6
-                            height_score = 1.0 - abs(0.6 - h/h_roi)  # Ideal height ~60% of ROI
+                            # Calcul de la confiance basée sur les propriétés du contour
+                            aspect_score = 1.0 - abs(0.6 - w/h)  # Ratio d'aspect idéal ~0.6
+                            height_score = 1.0 - abs(0.6 - h/h_roi)  # Hauteur idéale ~60% de la ROI
                             confidence = min(95.0, 70.0 + (aspect_score + height_score) * 12.5)
                             
-                            # Calculate absolute coordinates
+                            # Calcul des coordonnées absolues
                             abs_x = x1 + x_start
                             abs_y = y1 + y_start
                             abs_w = x_end - x_start
@@ -145,15 +147,15 @@ def detect_precise_digits(image_roi, roi_coords, full_image):
                                 'aspect_ratio': w/h
                             })
                             
-                            # Save debug image for this digit
+                            # Sauvegarde de l'image de débogage pour ce chiffre
                             digit_debug_path = os.path.join(DEBUG_FOLDER, 
                                                           f"{debug_timestamp}_digit_{len(digit_info)}.jpg")
                             cv2.imwrite(digit_debug_path, digit_roi_resized)
     
-    # Sort digits by their horizontal position (left to right)
+    # Tri des chiffres par position horizontale (de gauche à droite)
     digit_info.sort(key=lambda d: d['center_x'])
     
-    # Filter out overlapping/duplicate detections
+    # Filtrage des détections qui se chevauchent/sont dupliquées
     filtered_digits = []
     if digit_info:
         filtered_digits.append(digit_info[0])
@@ -161,37 +163,37 @@ def detect_precise_digits(image_roi, roi_coords, full_image):
             current = digit_info[i]
             previous = filtered_digits[-1]
             
-            # Check if this is overlapping with previous (within 30% of width)
+            # Vérification si ce chiffre chevauche le précédent (à moins de 30% de la largeur)
             overlap_threshold = previous['w'] * 0.3
             if current['center_x'] - previous['center_x'] > overlap_threshold:
                 filtered_digits.append(current)
             elif current['confidence'] > previous['confidence']:
-                # If overlapping, keep the one with higher confidence
+                # Si chevauchement, garder celui avec la plus haute confiance
                 filtered_digits[-1] = current
     
-    print(f"Detected {len(filtered_digits)} precise digit(s)")
+    print(f"Détection de {len(filtered_digits)} chiffre(s) précis")
     return filtered_digits, debug_timestamp
 
 def draw_precise_boxes(full_image, digit_info, reading, roi_coords=None):
-    """Draw precise green boxes around detected digits"""
+    """Dessine des boîtes vertes précises autour des chiffres détectés"""
     output = full_image.copy()
     
-    # Draw ROI if provided
+    # Dessiner la ROI si fournie
     if roi_coords:
         x1, y1, x2, y2 = roi_coords
-        cv2.rectangle(output, (x1, y1), (x2, y2), (0, 100, 255), 2)  # Orange for ROI
-        cv2.putText(output, "Digit Search Area", 
+        cv2.rectangle(output, (x1, y1), (x2, y2), (0, 100, 255), 2)  # Orange pour la ROI
+        cv2.putText(output, "Zone de recherche des chiffres", 
                    (x1, y1 - 15), cv2.FONT_HERSHEY_SIMPLEX, 
                    0.6, (0, 100, 255), 2)
     
-    # Draw precise green boxes for each detected digit
+    # Dessiner des boîtes vertes précises pour chaque chiffre détecté
     for i, digit_data in enumerate(digit_info):
         x, y, w, h = digit_data['x'], digit_data['y'], digit_data['w'], digit_data['h']
         
-        # Draw green rectangle with slightly thicker line for visibility
+        # Dessiner un rectangle vert avec un trait légèrement plus épais pour la visibilité
         cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 0), 2)
         
-        # Draw a filled background for the label
+        # Dessiner un arrière-plan rempli pour l'étiquette
         label = f"{digit_data['digit']}"
         text_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
         cv2.rectangle(output, 
@@ -199,158 +201,158 @@ def draw_precise_boxes(full_image, digit_info, reading, roi_coords=None):
                      (x + text_size[0] + 10, y),
                      (0, 255, 0), -1)
         
-        # Label with digit value in black
+        # Étiquette avec la valeur du chiffre en noir
         cv2.putText(output, label,
                    (x + 5, y - 5), cv2.FONT_HERSHEY_SIMPLEX,
                    0.8, (0, 0, 0), 2)
         
-        # Add confidence below the box
+        # Ajouter la confiance en dessous de la boîte
         conf_text = f"{digit_data['confidence']:.0f}%"
         cv2.putText(output, conf_text,
                    (x, y + h + 20), cv2.FONT_HERSHEY_SIMPLEX,
                    0.5, (0, 200, 0), 1)
     
-    # Draw the complete reading at the top
+    # Dessiner la lecture complète en haut
     if reading:
-        # Background for reading
-        text_size = cv2.getTextSize(f"Reading: {reading}", cv2.FONT_HERSHEY_SIMPLEX, 1.2, 3)[0]
+        # Arrière-plan pour la lecture
+        text_size = cv2.getTextSize(f"Lecture: {reading}", cv2.FONT_HERSHEY_SIMPLEX, 1.2, 3)[0]
         cv2.rectangle(output, 
                      (20, 20),
                      (20 + text_size[0] + 20, 20 + text_size[1] + 20),
                      (0, 0, 0), -1)
         
-        cv2.putText(output, f"Reading: {reading}",
+        cv2.putText(output, f"Lecture: {reading}",
                    (30, 50), cv2.FONT_HERSHEY_SIMPLEX,
                    1.2, (0, 255, 255), 3)
     
     return output
 
 # =====================================================
-# PRECISE METER READING EXTRACTION
+# EXTRACTION PRÉCISE DE LA LECTURE DU COMPTEUR
 # =====================================================
 def extract_precise_meter_reading(image):
-    """Extract meter reading with precise digit detection"""
+    """Extrait la lecture du compteur avec détection précise des chiffres"""
     h, w = image.shape[:2]
     
-    # Convert to grayscale
+    # Conversion en niveaux de gris
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
-    # Based on your image, the reading is in a very specific area:
-    # Between "FERRO®" and the "m³" symbol
-    # Let's define a very precise ROI
+    # Basé sur votre image, la lecture est dans une zone très spécifique :
+    # Entre "FERRO®" et le symbole "m³"
+    # Définissons une ROI très précise
     
-    # For water meters like in your image:
-    roi_y1, roi_y2 = int(h * 0.28), int(h * 0.38)  # Very narrow vertical band
-    roi_x1, roi_x2 = int(w * 0.35), int(w * 0.65)  # Centered horizontally
+    # Pour les compteurs d'eau comme dans votre image :
+    roi_y1, roi_y2 = int(h * 0.28), int(h * 0.38)  # Bande verticale très étroite
+    roi_x1, roi_x2 = int(w * 0.35), int(w * 0.65)  # Centrée horizontalement
     
-    # Extract ROI
+    # Extraction de la ROI
     roi = gray[roi_y1:roi_y2, roi_x1:roi_x2]
     roi_coords = (roi_x1, roi_y1, roi_x2, roi_y2)
     
-    # Detect individual digits precisely
+    # Détection précise des chiffres individuels
     digit_info, debug_timestamp = detect_precise_digits(roi, roi_coords, image)
     
-    # Construct reading from detected digits
+    # Construction de la lecture à partir des chiffres détectés
     detected_digits = ''.join([d['digit'] for d in digit_info if d['digit'].isdigit()])
     
-    # Try to get the complete reading from OCR as well
+    # Essayer d'obtenir la lecture complète via OCR également
     config_full = "--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789"
     digits_text = pytesseract.image_to_string(roi, config=config_full).replace(" ", "")
     
-    # Determine the best reading
+    # Déterminer la meilleure lecture
     reading = ""
     confidence = 0.0
     
-    if len(digit_info) >= 6:  # If we detected at least 6 digits
-        # Use detected digits, pad to 8 digits
+    if len(digit_info) >= 6:  # Si au moins 6 chiffres sont détectés
+        # Utiliser les chiffres détectés, compléter à 8 chiffres
         reading = detected_digits[:8].ljust(8, "0")
         
-        # Calculate average confidence of detected digits
+        # Calculer la confiance moyenne des chiffres détectés
         if digit_info:
             avg_confidence = sum(d['confidence'] for d in digit_info) / len(digit_info)
             confidence = min(95.0, avg_confidence * 0.9)
         else:
             confidence = 75.0
             
-        print(f"Using {len(digit_info)} detected digits: {reading}")
+        print(f"Utilisation de {len(digit_info)} chiffres détectés: {reading}")
         
     elif len(digits_text) >= 6:
-        # Use OCR result
+        # Utiliser le résultat de l'OCR
         reading = digits_text[:8].ljust(8, "0")
         confidence = 70.0
-        print(f"Using OCR text: {reading}")
+        print(f"Utilisation du texte OCR: {reading}")
         
-        # Try to match detected digits with OCR result
+        # Essayer de faire correspondre les chiffres détectés avec le résultat OCR
         if detected_digits and len(detected_digits) >= 4:
-            # If OCR and detection mostly agree, increase confidence
+            # Si l'OCR et la détection sont majoritairement d'accord, augmenter la confiance
             if detected_digits in reading or reading in detected_digits:
                 confidence = 85.0
     else:
-        # Try alternative OCR configuration
+        # Essayer une configuration OCR alternative
         config_alt = "--psm 8 --oem 3"
         alt_text = pytesseract.image_to_string(roi, config=config_alt)
         
-        # Look for any 8-digit pattern
+        # Rechercher un motif à 8 chiffres
         match = re.search(r'(\d{8})', alt_text)
         if match:
             reading = match.group(1)
             confidence = 65.0
-            print(f"Found 8-digit pattern: {reading}")
+            print(f"Motif à 8 chiffres trouvé: {reading}")
         else:
-            # Look for any sequence of digits
+            # Rechercher toute séquence de chiffres
             all_digits = re.findall(r'\d', alt_text)
             if len(all_digits) >= 6:
                 reading = ''.join(all_digits[:8]).ljust(8, "0")
                 confidence = 60.0
-                print(f"Extracted from text: {reading}")
+                print(f"Extraction depuis le texte: {reading}")
             else:
                 reading = "00000000"
                 confidence = 30.0
-                print(f"No reliable reading found")
+                print(f"Aucune lecture fiable trouvée")
     
-    # Create visualization with precise boxes
+    # Création de la visualisation avec les boîtes précises
     output_image = draw_precise_boxes(image, digit_info, reading, roi_coords)
     
-    # Add confidence and info text
-    cv2.putText(output_image, f"Confidence: {confidence:.1f}%",
+    # Ajout du texte de confiance et d'information
+    cv2.putText(output_image, f"Confiance: {confidence:.1f}%",
                (20, 90), cv2.FONT_HERSHEY_SIMPLEX,
                0.8, (0, 255, 0), 2)
     
-    cv2.putText(output_image, f"Digits Detected: {len(digit_info)}",
+    cv2.putText(output_image, f"Chiffres détectés: {len(digit_info)}",
                (20, 120), cv2.FONT_HERSHEY_SIMPLEX,
                0.7, (0, 200, 255), 2)
     
-    # Add timestamp
+    # Ajout du timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cv2.putText(output_image, f"Processed: {timestamp}",
+    cv2.putText(output_image, f"Traité le: {timestamp}",
                (20, h-20), cv2.FONT_HERSHEY_SIMPLEX,
                0.5, (200, 200, 200), 1)
     
     return reading, confidence, output_image, digit_info, debug_timestamp
 
 # =====================================================
-# MAIN PROCESSING
+# TRAITEMENT PRINCIPAL
 # =====================================================
 def process_image(image_path):
-    """Main processing function with precise digit detection"""
-    # Read image
+    """Fonction de traitement principale avec détection précise des chiffres"""
+    # Lecture de l'image
     image = cv2.imread(image_path)
     if image is None:
-        raise ValueError("Could not read image")
+        raise ValueError("Impossible de lire l'image")
     
     h, w = image.shape[:2]
     
-    # Extract reading with precise digit detection
+    # Extraction de la lecture avec détection précise des chiffres
     reading, confidence, output_image, digit_info, debug_timestamp = extract_precise_meter_reading(image)
     
-    print(f"Final reading: {reading}, Confidence: {confidence:.1f}%")
+    print(f"Lecture finale: {reading}, Confiance: {confidence:.1f}%")
     
-    # Save result image
+    # Sauvegarde de l'image résultat
     filename = f"result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
     result_path = os.path.join(UPLOAD_FOLDER, filename)
     cv2.imwrite(result_path, output_image)
     
-    # Prepare detailed digit information for response
+    # Préparation des informations détaillées sur les chiffres pour la réponse
     digit_details = []
     reading_digits = list(reading)
     
@@ -359,7 +361,7 @@ def process_image(image_path):
         digit_confidence = 0.0
         box_info = None
         
-        # Try to find a detected digit at this position
+        # Essayer de trouver un chiffre détecté à cette position
         if i < len(digit_info):
             detected_digit = digit_info[i]
             detected = (detected_digit['digit'] == expected_digit)
@@ -371,7 +373,7 @@ def process_image(image_path):
                 'height': detected_digit['h']
             }
         else:
-            # Estimate confidence based on position and overall confidence
+            # Estimation de la confiance basée sur la position et la confiance globale
             digit_confidence = confidence * (0.9 - (i * 0.05))
         
         status = '✓' if detected else '⚠' if digit_confidence > 60 else '✗'
@@ -399,7 +401,7 @@ def process_image(image_path):
     }
 
 # =====================================================
-# FLASK ROUTES (remain the same)
+# ROUTES FLASK (inchangées)
 # =====================================================
 @app.route("/")
 def index():
@@ -418,19 +420,19 @@ def upload():
     try:
         file = request.files.get("image")
         if not file:
-            return jsonify({"error": "No image provided"}), 400
+            return jsonify({"error": "Aucune image fournie"}), 400
         
-        # Validate file type
+        # Validation du type de fichier
         if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
-            return jsonify({"error": "Invalid file type. Use PNG, JPG, or BMP"}), 400
+            return jsonify({"error": "Type de fichier invalide. Utilisez PNG, JPG ou BMP"}), 400
         
-        # Save uploaded file
+        # Sauvegarde du fichier uploadé
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         input_name = f"input_{timestamp}.jpg"
         input_path = os.path.join(UPLOAD_FOLDER, input_name)
         file.save(input_path)
         
-        # Process image
+        # Traitement de l'image
         result_data = process_image(input_path)
         
         return jsonify({
@@ -441,8 +443,8 @@ def upload():
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()
-        print(f"Error: {e}\n{error_trace}")
-        return jsonify({"error": f"Processing error: {str(e)}"}), 500
+        print(f"Erreur: {e}\n{error_trace}")
+        return jsonify({"error": f"Erreur de traitement: {str(e)}"}), 500
 
 @app.route("/health")
 def health():
@@ -465,15 +467,15 @@ def list_debug_images():
 
 # =====================================================
 if __name__ == "__main__":
-    print("🚰 PRECISE WATER METER OCR WITH DIGIT DETECTION")
+    print("🚰 OCR PRÉCIS POUR COMPTEUR D'EAU AVEC DÉTECTION DE CHIFFRES")
     print("🌐 http://127.0.0.1:5000")
-    print("📁 Upload folder:", os.path.abspath(UPLOAD_FOLDER))
-    print("🎯 Features for precision:")
-    print("   - Narrow, targeted ROI for digit area")
-    print("   - Height-based filtering (digits must be tall)")
-    print("   - Aspect ratio filtering (digit-like shapes only)")
-    print("   - Compactness filtering (excludes symbols like #, m³)")
-    print("   - Overlap removal for clean detection")
-    print("   - Individual digit OCR with confidence scoring")
+    print("📁 Dossier d'upload:", os.path.abspath(UPLOAD_FOLDER))
+    print("🎯 Fonctionnalités pour la précision:")
+    print("   - ROI étroite et ciblée pour la zone des chiffres")
+    print("   - Filtrage basé sur la hauteur (les chiffres doivent être hauts)")
+    print("   - Filtrage du ratio d'aspect (formes ressemblant à des chiffres uniquement)")
+    print("   - Filtrage de la compacité (exclut les symboles comme #, m³)")
+    print("   - Suppression des chevauchements pour une détection propre")
+    print("   - OCR individuel des chiffres avec score de confiance")
     
     app.run(debug=True, host='0.0.0.0', port=5000)
