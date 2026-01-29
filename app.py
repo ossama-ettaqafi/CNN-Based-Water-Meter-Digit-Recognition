@@ -6,10 +6,23 @@ from datetime import datetime
 import pytesseract
 import re
 from collections import Counter
+import logging
 
 # ================== CONFIGURATION TESSERACT ==================
 # Chemin vers l'exécutable Tesseract (à adapter selon votre installation)
 pytesseract.pytesseract.tesseract_cmd = r"D:\Program Files\Tesseract-OCR\tesseract.exe"
+
+# ================== CONFIGURATION LOGGING ==================
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('ocr_log.txt'),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 # ================== APPLICATION FLASK ==================
 app = Flask(__name__)
@@ -24,12 +37,112 @@ app.config["DEBUG_FOLDER"] = DEBUG_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # Taille maximale de fichier : 16MB
 
 # =====================================================
+# FONCTIONS AUXILIAIRES
+# =====================================================
+def find_digit_region(image):
+    """Trouve automatiquement la région contenant les chiffres"""
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Sauvegarde pour débogage
+    debug_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    debug_path = os.path.join(DEBUG_FOLDER, f"{debug_timestamp}_find_region_gray.jpg")
+    cv2.imwrite(debug_path, gray)
+    
+    # Appliquer un seuil adaptatif
+    thresh = cv2.adaptiveThreshold(gray, 255, 
+                                   cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                   cv2.THRESH_BINARY_INV, 11, 2)
+    
+    # Sauvegarde du seuil pour débogage
+    thresh_path = os.path.join(DEBUG_FOLDER, f"{debug_timestamp}_find_region_thresh.jpg")
+    cv2.imwrite(thresh_path, thresh)
+    
+    # Nettoyage morphologique
+    kernel = np.ones((3, 3), np.uint8)
+    thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+    
+    # Trouver les contours
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    # Filtrer les contours par taille et forme
+    digit_contours = []
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        area = cv2.contourArea(contour)
+        aspect_ratio = w / h if h > 0 else 0
+        
+        # Critères pour des chiffres
+        if (h > image.shape[0] * 0.15 and  # Hauteur minimale
+            w > image.shape[1] * 0.02 and   # Largeur minimale
+            area > 100 and                  # Aire minimale
+            0.3 < aspect_ratio < 1.5):      # Ratio raisonnable
+            digit_contours.append((x, y, w, h))
+    
+    logger.info(f"Nombre de contours détectés comme chiffres: {len(digit_contours)}")
+    
+    # Si on a trouvé des contours, calculer la région englobante
+    if digit_contours:
+        x_coords = [x for x, _, _, _ in digit_contours]
+        y_coords = [y for _, y, _, _ in digit_contours]
+        w_coords = [w for _, _, w, _ in digit_contours]
+        h_coords = [h for _, _, _, h in digit_contours]
+        
+        x1 = min(x_coords)
+        y1 = min(y_coords)
+        x2 = max([x + w for x, w in zip(x_coords, w_coords)])
+        y2 = max([y + h for y, h in zip(y_coords, h_coords)])
+        
+        # Ajouter une marge
+        margin_x = int(image.shape[1] * 0.1)
+        margin_y = int(image.shape[0] * 0.1)
+        
+        region = (
+            max(0, x1 - margin_x),
+            max(0, y1 - margin_y),
+            min(image.shape[1], x2 + margin_x),
+            min(image.shape[0], y2 + margin_y)
+        )
+        
+        logger.info(f"Région détectée automatiquement: {region}")
+        return region
+    
+    logger.info("Aucune région détectée automatiquement, utilisation de la ROI par défaut")
+    return None
+
+def validate_reading(reading, expected_length=6):
+    """Valide et corrige si nécessaire la lecture"""
+    if not reading:
+        return reading
+    
+    # S'assurer que ce sont bien des chiffres
+    digits = re.findall(r'\d', reading)
+    
+    logger.info(f"Validation: {len(digits)} chiffres trouvés dans '{reading}'")
+    
+    if len(digits) < expected_length:
+        # Si trop peu de chiffres, retourner ce qu'on a
+        result = ''.join(digits)
+        logger.warning(f"Trop peu de chiffres: {len(digits)} < {expected_length}")
+        return result
+    elif len(digits) > expected_length:
+        # Si trop de chiffres, prendre les premiers
+        result = ''.join(digits[:expected_length])
+        logger.warning(f"Trop de chiffres: {len(digits)} > {expected_length}, tronqué à {result}")
+        return result
+    else:
+        result = ''.join(digits)
+        logger.info(f"Lecture validée: {result}")
+        return result
+
+# =====================================================
 # DÉTECTION PRÉCISE DE TOUS LES CHIFFRES DANS LA ROI
 # =====================================================
 def detect_precise_digits(image_roi, roi_coords, full_image):
     """Détecte précisément TOUS les chiffres individuels dans la ROI"""
     x1, y1, x2, y2 = roi_coords
     h_roi, w_roi = image_roi.shape
+    
+    logger.info(f"Détection dans ROI: {roi_coords}, taille: {w_roi}x{h_roi}")
     
     # Sauvegarde de la ROI originale pour débogage
     debug_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
@@ -56,33 +169,35 @@ def detect_precise_digits(image_roi, roi_coords, full_image):
     # Étape 4 : Recherche des contours
     contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
+    logger.info(f"Nombre de contours trouvés: {len(contours)}")
+    
     digit_info = []
     
-    # Paramètres ORIGINAUX (garder les mêmes seuils)
-    min_digit_height = h_roi * 0.4
+    # Paramètres pour la détection des chiffres
+    min_digit_height = h_roi * 0.3
     max_digit_height = h_roi * 0.9
-    min_digit_width = w_roi * 0.05
+    min_digit_width = w_roi * 0.03
     
-    for contour in contours:
+    for i, contour in enumerate(contours):
         x, y, w, h = cv2.boundingRect(contour)
         area = cv2.contourArea(contour)
         
-        # Filtrage ORIGINAL
+        # Filtrage des contours
         if (min_digit_height < h < max_digit_height and
             w > min_digit_width and
-            area > 100 and
-            0.3 < w/h < 1.0):
+            area > 80 and
+            0.25 < w/h < 1.2):
             
             # Calcul de la compacité
             perimeter = cv2.arcLength(contour, True)
             if perimeter > 0:
                 compactness = 4 * np.pi * area / (perimeter * perimeter)
                 
-                # Plage ORIGINALE de compacité
-                if 0.2 < compactness < 0.8:
+                # Filtre de compacité
+                if 0.15 < compactness < 0.9:
                     
                     # Padding
-                    pad = 2
+                    pad = 3
                     x_start = max(0, x - pad)
                     y_start = max(0, y - pad)
                     x_end = min(w_roi, x + w + pad)
@@ -91,79 +206,92 @@ def detect_precise_digits(image_roi, roi_coords, full_image):
                     # Extraction de la région
                     digit_roi = enhanced[y_start:y_end, x_start:x_end]
                     
+                    if digit_roi.size == 0:
+                        continue
+                    
                     # Redimensionnement
-                    if digit_roi.size > 0:
-                        target_height = 60
-                        aspect_ratio = w / h
-                        target_width = int(target_height * aspect_ratio)
-                        digit_roi_resized = cv2.resize(digit_roi, 
-                                                      (max(20, target_width), target_height),
-                                                      interpolation=cv2.INTER_CUBIC)
-                        
-                        # Application d'un léger flou gaussien
-                        digit_roi_resized = cv2.GaussianBlur(digit_roi_resized, (1, 1), 0)
-                        
-                        # Binarisation spécifique pour l'OCR
-                        _, digit_binary = cv2.threshold(digit_roi_resized, 0, 255, 
-                                                       cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-                        
-                        # Essayer plusieurs configurations OCR
-                        digit_text = ""
-                        configs = [
-                            "--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789",
-                            "--psm 8 --oem 3 -c tessedit_char_whitelist=0123456789",
-                            "--psm 10 --oem 3"
-                        ]
-                        
-                        for config in configs:
+                    target_height = 60
+                    aspect_ratio = w / h
+                    target_width = int(target_height * aspect_ratio)
+                    digit_roi_resized = cv2.resize(digit_roi, 
+                                                  (max(20, target_width), target_height),
+                                                  interpolation=cv2.INTER_CUBIC)
+                    
+                    # Application d'un léger flou gaussien
+                    digit_roi_resized = cv2.GaussianBlur(digit_roi_resized, (1, 1), 0)
+                    
+                    # Binarisation spécifique pour l'OCR
+                    _, digit_binary = cv2.threshold(digit_roi_resized, 0, 255, 
+                                                   cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                    
+                    # Essayer plusieurs configurations OCR avec plus de caractères
+                    digit_text = ""
+                    configs = [
+                        "--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789m³",
+                        "--psm 8 --oem 3 -c tessedit_char_whitelist=0123456789m³",
+                        "--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789",
+                        "--psm 8 --oem 3"
+                    ]
+                    
+                    for config in configs:
+                        try:
                             digit_text = pytesseract.image_to_string(digit_binary, 
                                                                     config=config).strip()
-                            if digit_text and digit_text[0].isdigit():
+                            if digit_text and (digit_text[0].isdigit() or digit_text[0] in 'm³'):
                                 break
-                        
-                        # Si l'OCR échoue, essayer avec l'image non binaire
-                        if not digit_text or not digit_text[0].isdigit():
-                            for config in configs:
+                        except Exception as e:
+                            logger.warning(f"Erreur OCR avec config {config}: {e}")
+                    
+                    # Si l'OCR échoue, essayer avec l'image non binaire
+                    if not digit_text or not (digit_text[0].isdigit() or digit_text[0] in 'm³'):
+                        for config in configs:
+                            try:
                                 digit_text = pytesseract.image_to_string(digit_roi_resized, 
                                                                         config=config).strip()
-                                if digit_text and digit_text[0].isdigit():
+                                if digit_text and (digit_text[0].isdigit() or digit_text[0] in 'm³'):
                                     break
+                            except Exception as e:
+                                logger.warning(f"Erreur OCR avec image non binaire: {e}")
+                    
+                    if digit_text and (digit_text[0].isdigit() or digit_text[0] in 'm³'):
+                        digit = digit_text[0] if digit_text[0] in '0123456789m³' else '?'
                         
-                        if digit_text and digit_text[0].isdigit():
-                            digit = digit_text[0]
-                            
-                            # Calcul de la confiance
-                            aspect_score = 1.0 - abs(0.6 - w/h)
-                            height_score = 1.0 - abs(0.6 - h/h_roi)
-                            confidence = min(95.0, 70.0 + (aspect_score + height_score) * 12.5)
-                            
-                            # Coordonnées absolues
-                            abs_x = x1 + x_start
-                            abs_y = y1 + y_start
-                            abs_w = x_end - x_start
-                            abs_h = y_end - y_start
-                            
-                            digit_info.append({
-                                'x': abs_x,
-                                'y': abs_y,
-                                'w': abs_w,
-                                'h': abs_h,
-                                'center_x': abs_x + abs_w // 2,
-                                'digit': digit,
-                                'confidence': confidence,
-                                'contour_area': area,
-                                'aspect_ratio': w/h
-                            })
-                            
-                            # Sauvegarde de l'image de débogage
-                            digit_debug_path = os.path.join(DEBUG_FOLDER, 
-                                                          f"{debug_timestamp}_digit_{len(digit_info)}.jpg")
-                            cv2.imwrite(digit_debug_path, digit_roi_resized)
+                        # Calcul de la confiance
+                        aspect_score = 1.0 - min(0.5, abs(0.6 - w/h))
+                        height_score = 1.0 - min(0.5, abs(0.6 - h/h_roi))
+                        compactness_score = 1.0 - min(0.5, abs(0.4 - compactness))
+                        confidence = min(95.0, 60.0 + (aspect_score + height_score + compactness_score) * 15.0)
+                        
+                        # Coordonnées absolues
+                        abs_x = x1 + x_start
+                        abs_y = y1 + y_start
+                        abs_w = x_end - x_start
+                        abs_h = y_end - y_start
+                        
+                        digit_info.append({
+                            'x': abs_x,
+                            'y': abs_y,
+                            'w': abs_w,
+                            'h': abs_h,
+                            'center_x': abs_x + abs_w // 2,
+                            'digit': digit,
+                            'confidence': confidence,
+                            'contour_area': area,
+                            'aspect_ratio': w/h,
+                            'compactness': compactness
+                        })
+                        
+                        logger.debug(f"Chiffre détecté: {digit} avec confiance {confidence:.1f}%")
+                        
+                        # Sauvegarde de l'image de débogage
+                        digit_debug_path = os.path.join(DEBUG_FOLDER, 
+                                                      f"{debug_timestamp}_digit_{len(digit_info)}_{digit}.jpg")
+                        cv2.imwrite(digit_debug_path, digit_roi_resized)
     
     # Tri des chiffres par position horizontale
     digit_info.sort(key=lambda d: d['center_x'])
     
-    # Filtrage des doublons - AVEC PLUS DE TOLÉRANCE
+    # Filtrage des doublons
     filtered_digits = []
     if digit_info:
         filtered_digits.append(digit_info[0])
@@ -172,17 +300,17 @@ def detect_precise_digits(image_roi, roi_coords, full_image):
             previous = filtered_digits[-1]
             
             # Vérifier si les chiffres sont trop proches
-            overlap_threshold = previous['w'] * 0.3
+            overlap_threshold = previous['w'] * 0.4
             distance = current['center_x'] - previous['center_x']
             
             if distance > overlap_threshold:
                 filtered_digits.append(current)
-            elif current['confidence'] > previous['confidence'] + 5:
+            elif current['confidence'] > previous['confidence'] + 10:
                 # Si chevauchement significatif, garder celui avec plus de confiance
                 filtered_digits[-1] = current
             # Sinon, ignorer le doublon (déjà gardé le premier)
     
-    print(f"Détection de {len(filtered_digits)} chiffre(s) dans la ROI")
+    logger.info(f"Détection terminée: {len(filtered_digits)} chiffre(s) filtrés")
     return filtered_digits, debug_timestamp
 
 def draw_precise_boxes(full_image, digit_info, reading, roi_coords=None):
@@ -242,24 +370,35 @@ def draw_precise_boxes(full_image, digit_info, reading, roi_coords=None):
 # EXTRACTION PRÉCISE DE TOUS LES CHIFFRES
 # =====================================================
 def extract_precise_meter_reading(image):
-    """Extrait TOUS les chiffres avec détection précise (ROI ORIGINALE)"""
+    """Extrait TOUS les chiffres avec détection précise (ROI adaptative)"""
     h, w = image.shape[:2]
+    
+    logger.info(f"Traitement d'image de taille: {w}x{h}")
     
     # Conversion en niveaux de gris
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
-    # ROI ORIGINALE (exactement comme dans le code original)
-    roi_y1, roi_y2 = int(h * 0.28), int(h * 0.38)  # Bande verticale très étroite
-    roi_x1, roi_x2 = int(w * 0.35), int(w * 0.65)  # Centrée horizontalement
+    # Essayer de détecter automatiquement la région des chiffres
+    auto_region = find_digit_region(image)
+    
+    if auto_region:
+        # Utiliser la région détectée automatiquement
+        roi_x1, roi_y1, roi_x2, roi_y2 = auto_region
+        logger.info(f"Utilisation de la région automatique: {auto_region}")
+    else:
+        # ROI par défaut (comme dans le code original)
+        roi_y1, roi_y2 = int(h * 0.28), int(h * 0.38)
+        roi_x1, roi_x2 = int(w * 0.35), int(w * 0.65)
+        logger.info(f"Utilisation de la ROI par défaut: {(roi_x1, roi_y1, roi_x2, roi_y2)}")
     
     # Extraction de la ROI
     roi = gray[roi_y1:roi_y2, roi_x1:roi_x2]
     roi_coords = (roi_x1, roi_y1, roi_x2, roi_y2)
     
-    # Détection précise de TOUS les chiffres dans cette ROI étroite
+    # Détection précise de TOUS les chiffres dans la ROI
     digit_info, debug_timestamp = detect_precise_digits(roi, roi_coords, image)
     
-    # Si nous détectons des chiffres dans cette ROI étroite
+    # Si nous détectons des chiffres
     if digit_info:
         # Trier par position X
         digit_info.sort(key=lambda d: d['center_x'])
@@ -267,60 +406,66 @@ def extract_precise_meter_reading(image):
         # Construction de la lecture à partir des chiffres détectés
         detected_digits = ''.join([d['digit'] for d in digit_info if d['digit'].isdigit()])
         
-        # Si nous avons au moins 5 chiffres (basé sur votre sortie "Chiffres détectés: 5")
-        if len(detected_digits) >= 5:
-            # Prendre tous les chiffres détectés
-            reading = detected_digits
-            
+        # Validation de la lecture
+        reading = validate_reading(detected_digits, expected_length=6)
+        
+        if reading:
             # Calculer la confiance moyenne
-            avg_confidence = sum(d['confidence'] for d in digit_info) / len(digit_info)
-            confidence = min(95.0, avg_confidence * 0.95)
+            confidences = [d['confidence'] for d in digit_info if d['digit'].isdigit()]
+            if confidences:
+                avg_confidence = sum(confidences) / len(confidences)
+                confidence = min(99.0, avg_confidence * 0.95)
+            else:
+                confidence = 70.0
             
-            print(f"Détection dans ROI étroite: {len(digit_info)} chiffres -> {reading}")
+            logger.info(f"Détection réussie: {len(digit_info)} chiffres -> {reading} ({confidence:.1f}%)")
         else:
             # Fallback: OCR sur toute la ROI
             config_full = "--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789"
             digits_text = pytesseract.image_to_string(roi, config=config_full).replace(" ", "")
+            reading = validate_reading(digits_text, expected_length=6)
             
-            if len(digits_text) >= 5:
-                reading = digits_text
-                confidence = 70.0
-                print(f"OCR sur ROI: {reading}")
+            if reading:
+                confidence = 65.0
+                logger.info(f"OCR fallback: {reading}")
             else:
                 reading = ""
                 confidence = 30.0
-                print(f"Pas assez de chiffres détectés")
+                logger.warning("Pas assez de chiffres détectés")
     else:
-        # Fallback complet
-        config_full = "--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789"
-        digits_text = pytesseract.image_to_string(roi, config=config_full).replace(" ", "")
+        # Fallback complet avec différentes configurations
+        configs = [
+            "--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789",
+            "--psm 8 --oem 3",
+            "--psm 6 --oem 3"
+        ]
         
-        if len(digits_text) >= 5:
-            reading = digits_text
-            confidence = 70.0
-            print(f"OCR uniquement: {reading}")
-        else:
-            # Essayer une configuration OCR alternative
-            config_alt = "--psm 8 --oem 3"
-            alt_text = pytesseract.image_to_string(roi, config=config_alt)
-            
-            # Rechercher un motif à plusieurs chiffres
-            match = re.search(r'(\d{5,})', alt_text)
-            if match:
-                reading = match.group(1)
-                confidence = 65.0
-                print(f"Motif trouvé: {reading}")
-            else:
-                # Rechercher toute séquence de chiffres
-                all_digits = re.findall(r'\d', alt_text)
-                if len(all_digits) >= 5:
-                    reading = ''.join(all_digits)
+        reading = ""
+        confidence = 30.0
+        
+        for config in configs:
+            try:
+                text = pytesseract.image_to_string(roi, config=config)
+                # Rechercher un motif à plusieurs chiffres
+                match = re.search(r'(\d{5,})', text)
+                if match:
+                    reading = validate_reading(match.group(1), expected_length=6)
                     confidence = 60.0
-                    print(f"Extraction depuis le texte: {reading}")
-                else:
-                    reading = ""
-                    confidence = 30.0
-                    print(f"Aucune lecture fiable trouvée")
+                    logger.info(f"Motif trouvé avec config {config}: {reading}")
+                    break
+            except Exception as e:
+                logger.warning(f"Erreur OCR avec config {config}: {e}")
+        
+        if not reading:
+            # Dernier recours : extraire tous les chiffres
+            text = pytesseract.image_to_string(roi, config="--psm 3 --oem 3")
+            all_digits = re.findall(r'\d', text)
+            if len(all_digits) >= 5:
+                reading = validate_reading(''.join(all_digits), expected_length=6)
+                confidence = 50.0
+                logger.info(f"Extraction depuis texte: {reading}")
+            else:
+                logger.error("Aucune lecture fiable trouvée")
     
     # Création de la visualisation avec les boîtes précises
     output_image = draw_precise_boxes(image, digit_info, reading, roi_coords)
@@ -347,29 +492,40 @@ def extract_precise_meter_reading(image):
                (20, h-20), cv2.FONT_HERSHEY_SIMPLEX,
                0.5, (200, 200, 200), 1)
     
+    # Ajouter une légende pour le type de ROI
+    roi_type = "Automatique" if auto_region else "Par défaut"
+    cv2.putText(output_image, f"ROI: {roi_type}",
+               (w - 150, h - 20), cv2.FONT_HERSHEY_SIMPLEX,
+               0.5, (200, 200, 200), 1)
+    
     return reading, confidence, output_image, digit_info, debug_timestamp
 
 # =====================================================
 # TRAITEMENT PRINCIPAL
 # =====================================================
 def process_image(image_path):
-    """Fonction de traitement principale (ROI ORIGINALE)"""
+    """Fonction de traitement principale avec ROI adaptative"""
+    logger.info(f"Début du traitement de l'image: {image_path}")
+    
     # Lecture de l'image
     image = cv2.imread(image_path)
     if image is None:
+        logger.error(f"Impossible de lire l'image: {image_path}")
         raise ValueError("Impossible de lire l'image")
     
     h, w = image.shape[:2]
+    logger.info(f"Image chargée: {w}x{h} pixels")
     
-    # Extraction de la lecture avec ROI ORIGINALE
+    # Extraction de la lecture avec ROI adaptative
     reading, confidence, output_image, digit_info, debug_timestamp = extract_precise_meter_reading(image)
     
-    print(f"Lecture finale: {reading}, Confiance: {confidence:.1f}%")
+    logger.info(f"Lecture finale: {reading}, Confiance: {confidence:.1f}%")
     
     # Sauvegarde de l'image résultat
     filename = f"result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
     result_path = os.path.join(UPLOAD_FOLDER, filename)
     cv2.imwrite(result_path, output_image)
+    logger.info(f"Image résultat sauvegardée: {result_path}")
     
     # Préparation des informations détaillées sur les chiffres pour la réponse
     digit_details = []
@@ -411,7 +567,7 @@ def process_image(image_path):
     
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    return {
+    result = {
         'reading': reading,
         'confidence': f"{confidence:.1f}%",
         'image_url': f"/uploads/{filename}",
@@ -419,13 +575,16 @@ def process_image(image_path):
         'digit_details': digit_details,
         'digit_count': len(reading_digits),
         'total_digits_detected': len(digit_info),
-        'all_detected_digits': all_digits_str,  # Tous les chiffres détectés dans la ROI
+        'all_detected_digits': all_digits_str,
         'timestamp': timestamp,
         'debug_timestamp': debug_timestamp
     }
+    
+    logger.info(f"Traitement terminé. Résultat: {result}")
+    return result
 
 # =====================================================
-# ROUTES FLASK (inchangées)
+# ROUTES FLASK
 # =====================================================
 @app.route("/")
 def index():
@@ -439,26 +598,52 @@ def uploaded(filename):
 def debug_file(filename):
     return send_from_directory(DEBUG_FOLDER, filename)
 
+@app.route("/debug_session/<debug_timestamp>")
+def debug_session(debug_timestamp):
+    """Récupère toutes les images de débogage d'une session"""
+    debug_files = []
+    
+    for file in os.listdir(DEBUG_FOLDER):
+        if file.startswith(debug_timestamp):
+            file_type = file.replace(debug_timestamp, '').strip('_').split('_')[0]
+            debug_files.append({
+                'name': file,
+                'url': f'/debug/{file}',
+                'type': file_type,
+                'size': os.path.getsize(os.path.join(DEBUG_FOLDER, file))
+            })
+    
+    return jsonify({
+        'session_id': debug_timestamp,
+        'debug_files': sorted(debug_files, key=lambda x: x['type'])
+    })
+
 @app.route("/upload", methods=["POST"])
 def upload():
     try:
+        logger.info("Requête d'upload reçue")
         file = request.files.get("image")
         if not file:
+            logger.error("Aucune image fournie")
             return jsonify({"error": "Aucune image fournie"}), 400
         
         # Validation du type de fichier
-        if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
-            return jsonify({"error": "Type de fichier invalide. Utilisez PNG, JPG ou BMP"}), 400
+        valid_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.webp')
+        if not file.filename.lower().endswith(valid_extensions):
+            logger.error(f"Type de fichier invalide: {file.filename}")
+            return jsonify({"error": f"Type de fichier invalide. Utilisez {', '.join(valid_extensions)}"}), 400
         
         # Sauvegarde du fichier uploadé
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         input_name = f"input_{timestamp}.jpg"
         input_path = os.path.join(UPLOAD_FOLDER, input_name)
         file.save(input_path)
+        logger.info(f"Fichier sauvegardé: {input_path}")
         
         # Traitement de l'image
         result_data = process_image(input_path)
         
+        logger.info("Requête traitée avec succès")
         return jsonify({
             "success": True,
             **result_data
@@ -467,12 +652,17 @@ def upload():
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()
-        print(f"Erreur: {e}\n{error_trace}")
+        logger.error(f"Erreur lors du traitement: {e}\n{error_trace}")
         return jsonify({"error": f"Erreur de traitement: {str(e)}"}), 500
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
+    return jsonify({
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "service": "Water Meter OCR",
+        "version": "2.0.0"
+    })
 
 @app.route("/debug_images")
 def list_debug_images():
@@ -482,22 +672,53 @@ def list_debug_images():
             debug_files.append({
                 'name': file,
                 'url': f'/debug/{file}',
-                'size': os.path.getsize(os.path.join(DEBUG_FOLDER, file))
+                'size': os.path.getsize(os.path.join(DEBUG_FOLDER, file)),
+                'created': datetime.fromtimestamp(os.path.getctime(os.path.join(DEBUG_FOLDER, file))).isoformat()
             })
     
     return jsonify({
-        'debug_files': sorted(debug_files, key=lambda x: x['name'], reverse=True)[:10]
+        'debug_files': sorted(debug_files, key=lambda x: x['name'], reverse=True)[:20]
     })
+
+@app.route("/clear_debug", methods=["POST"])
+def clear_debug():
+    """Efface toutes les images de débogage"""
+    try:
+        count = 0
+        for file in os.listdir(DEBUG_FOLDER):
+            if file.endswith('.jpg'):
+                os.remove(os.path.join(DEBUG_FOLDER, file))
+                count += 1
+        
+        logger.info(f"{count} fichiers de débogage effacés")
+        return jsonify({"success": True, "deleted_count": count})
+    except Exception as e:
+        logger.error(f"Erreur lors du nettoyage: {e}")
+        return jsonify({"error": str(e)}), 500
 
 # =====================================================
 if __name__ == "__main__":
-    print("🚰 OCR PRÉCIS POUR COMPTEUR D'EAU - ROI ORIGINALE")
-    print("🌐 http://127.0.0.1:5000")
+    print("🚰 OCR PRÉCIS POUR COMPTEUR D'EAU - VERSION 2.0")
+    print("=============================================")
+    print("🌐 Serveur web: http://127.0.0.1:5000")
     print("📁 Dossier d'upload:", os.path.abspath(UPLOAD_FOLDER))
-    print("🎯 Configuration:")
-    print("   - ROI étroite et ciblée (28%-38% hauteur, 35%-65% largeur)")
-    print("   - Détection de TOUS les chiffres dans cette ROI spécifique")
-    print("   - Paramètres de détection originaux conservés")
-    print("   - Sortie inclut 'all_detected_digits' avec tous les chiffres trouvés")
+    print("🐛 Dossier de débogage:", os.path.abspath(DEBUG_FOLDER))
+    print("📝 Fichier de log:", os.path.abspath("ocr_log.txt"))
+    print("🎯 Fonctionnalités améliorées:")
+    print("   - ROI adaptative (détection automatique)")
+    print("   - Validation intelligente des lectures")
+    print("   - Logging détaillé")
+    print("   - Support étendu des caractères (inclut m³)")
+    print("   - API de débogage améliorée")
+    print("   - Interface web enrichie")
+    print("=============================================")
+    
+    # Vérifier que Tesseract est accessible
+    try:
+        pytesseract.get_tesseract_version()
+        print("✅ Tesseract OCR est correctement configuré")
+    except Exception as e:
+        print(f"❌ Erreur Tesseract: {e}")
+        print("⚠️  Assurez-vous que le chemin vers tesseract.exe est correct")
     
     app.run(debug=True, host='0.0.0.0', port=5000)

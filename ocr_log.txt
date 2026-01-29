@@ -1,0 +1,29 @@
+2026-01-29 17:47:23,427 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.39:5000
+2026-01-29 17:47:23,428 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 17:47:23,431 - INFO -  * Restarting with stat
+2026-01-29 17:47:25,755 - WARNING -  * Debugger is active!
+2026-01-29 17:47:25,811 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 17:47:38,033 - INFO - 127.0.0.1 - - [29/Jan/2026 17:47:38] "GET / HTTP/1.1" 200 -
+2026-01-29 17:47:38,808 - INFO - 127.0.0.1 - - [29/Jan/2026 17:47:38] "GET / HTTP/1.1" 200 -
+2026-01-29 17:47:44,592 - INFO - Requête d'upload reçue
+2026-01-29 17:47:44,618 - INFO - Fichier sauvegardé: uploads\input_20260129_174744_609688.jpg
+2026-01-29 17:47:44,621 - INFO - Début du traitement de l'image: uploads\input_20260129_174744_609688.jpg
+2026-01-29 17:47:44,693 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 17:47:44,693 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 17:47:44,749 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 17:47:44,750 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 17:47:44,751 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 17:47:44,751 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 17:47:44,761 - INFO - Nombre de contours trouvés: 147
+2026-01-29 17:47:52,623 - INFO - Détection terminée: 11 chiffre(s) filtrés
+2026-01-29 17:47:52,624 - INFO - Validation: 11 chiffres trouvés dans '00101012188'
+2026-01-29 17:47:52,625 - WARNING - Trop de chiffres: 11 > 6, tronqué à 001010
+2026-01-29 17:47:52,625 - INFO - Détection réussie: 11 chiffres -> 001010 (90.2%)
+2026-01-29 17:47:52,628 - INFO - Lecture finale: 001010, Confiance: 90.2%
+2026-01-29 17:47:52,645 - INFO - Image résultat sauvegardée: uploads\result_20260129_174752.jpg
+2026-01-29 17:47:52,847 - INFO - Requête traitée avec succès
+2026-01-29 17:47:52,850 - INFO - 127.0.0.1 - - [29/Jan/2026 17:47:52] "POST /upload HTTP/1.1" 200 -
+2026-01-29 17:47:53,037 - INFO - 127.0.0.1 - - [29/Jan/2026 17:47:53] "GET /uploads/result_20260129_174752.jpg?t=1769705272858 HTTP/1.1" 200 -
