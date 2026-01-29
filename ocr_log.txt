@@ -27,3 +27,599 @@
 2026-01-29 17:47:52,847 - INFO - Requête traitée avec succès
 2026-01-29 17:47:52,850 - INFO - 127.0.0.1 - - [29/Jan/2026 17:47:52] "POST /upload HTTP/1.1" 200 -
 2026-01-29 17:47:53,037 - INFO - 127.0.0.1 - - [29/Jan/2026 17:47:53] "GET /uploads/result_20260129_174752.jpg?t=1769705272858 HTTP/1.1" 200 -
+2026-01-29 17:55:39,587 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.39:5000
+2026-01-29 17:55:39,591 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 17:55:39,595 - INFO -  * Restarting with stat
+2026-01-29 17:55:41,548 - WARNING -  * Debugger is active!
+2026-01-29 17:55:41,558 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 17:57:44,186 - INFO - 127.0.0.1 - - [29/Jan/2026 17:57:44] "GET / HTTP/1.1" 200 -
+2026-01-29 17:57:44,909 - INFO - 127.0.0.1 - - [29/Jan/2026 17:57:44] "GET / HTTP/1.1" 200 -
+2026-01-29 17:57:53,010 - INFO - Début du traitement: uploads\input_20260129_175753_005275.jpg
+2026-01-29 17:57:53,099 - INFO - Image chargée: 1694x1062
+2026-01-29 17:57:53,100 - INFO - Traitement d'image: 1694x1062 pixels
+2026-01-29 17:57:53,138 - INFO - ROI sélectionnée: (508, 318, 1185, 531)
+2026-01-29 17:57:53,139 - INFO - Détection dans ROI: (508, 318, 1185, 531), taille: 677x213
+2026-01-29 17:57:53,152 - INFO - Nombre de contours initiaux: 171
+2026-01-29 17:57:53,192 - INFO - Détection terminée: 0 chiffre(s) validés
+2026-01-29 17:57:53,578 - ERROR - Aucun chiffre détecté
+2026-01-29 17:57:53,581 - INFO - Résultat:  (20.0%)
+2026-01-29 17:57:53,644 - INFO - 127.0.0.1 - - [29/Jan/2026 17:57:53] "POST /upload HTTP/1.1" 200 -
+2026-01-29 17:57:53,979 - INFO - 127.0.0.1 - - [29/Jan/2026 17:57:53] "GET /uploads/result_20260129_175753.jpg?t=1769705873689 HTTP/1.1" 200 -
+2026-01-29 17:58:00,961 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 17:58:01,103 - INFO -  * Restarting with stat
+2026-01-29 17:58:02,691 - WARNING -  * Debugger is active!
+2026-01-29 17:58:02,699 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 18:08:38,248 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.39:5000
+2026-01-29 18:08:38,248 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 18:08:38,251 - INFO -  * Restarting with stat
+2026-01-29 18:08:39,681 - WARNING -  * Debugger is active!
+2026-01-29 18:08:39,691 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 18:08:43,409 - INFO - 127.0.0.1 - - [29/Jan/2026 18:08:43] "GET / HTTP/1.1" 200 -
+2026-01-29 18:08:44,188 - INFO - 127.0.0.1 - - [29/Jan/2026 18:08:44] "GET / HTTP/1.1" 200 -
+2026-01-29 18:10:59,883 - INFO - 127.0.0.1 - - [29/Jan/2026 18:10:59] "GET / HTTP/1.1" 200 -
+2026-01-29 18:11:00,619 - INFO - 127.0.0.1 - - [29/Jan/2026 18:11:00] "GET / HTTP/1.1" 200 -
+2026-01-29 18:11:06,154 - INFO - Requête d'upload reçue
+2026-01-29 18:11:06,176 - INFO - Fichier sauvegardé: uploads\input_20260129_181106_166097.jpg
+2026-01-29 18:11:06,178 - INFO - Début du traitement de l'image: uploads\input_20260129_181106_166097.jpg
+2026-01-29 18:11:06,258 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 18:11:06,258 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 18:11:06,312 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 18:11:06,312 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 18:11:06,313 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 18:11:06,314 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 18:11:06,323 - INFO - Nombre de contours trouvés: 147
+2026-01-29 18:11:14,303 - INFO - Détection terminée: 11 chiffre(s) filtrés
+2026-01-29 18:11:14,304 - INFO - Position 2: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 18:11:14,304 - INFO - Position 4: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 18:11:14,305 - INFO - Position 6: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 18:11:14,305 - INFO - Position 8: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 18:11:14,306 - INFO - Validation: 7 chiffres trouvés dans '0000288'
+2026-01-29 18:11:14,306 - WARNING - Trop de chiffres: 7 > 6, tronqué à 000028
+2026-01-29 18:11:14,307 - INFO - Détection réussie: 11 chiffres -> 000028 (83.8%)
+2026-01-29 18:11:14,310 - INFO - Lecture finale: 000028, Confiance: 83.8%
+2026-01-29 18:11:14,325 - INFO - Image résultat sauvegardée: uploads\result_20260129_181114.jpg
+2026-01-29 18:11:14,372 - INFO - Requête traitée avec succès
+2026-01-29 18:11:14,375 - INFO - 127.0.0.1 - - [29/Jan/2026 18:11:14] "POST /upload HTTP/1.1" 200 -
+2026-01-29 18:11:14,760 - INFO - 127.0.0.1 - - [29/Jan/2026 18:11:14] "GET /uploads/result_20260129_181114.jpg?t=1769706674380 HTTP/1.1" 200 -
+2026-01-29 18:16:29,508 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.39:5000
+2026-01-29 18:16:29,510 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 18:16:29,514 - INFO -  * Restarting with stat
+2026-01-29 18:16:30,937 - WARNING -  * Debugger is active!
+2026-01-29 18:16:30,946 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 18:16:36,009 - INFO - 127.0.0.1 - - [29/Jan/2026 18:16:36] "GET / HTTP/1.1" 200 -
+2026-01-29 18:16:36,649 - INFO - 127.0.0.1 - - [29/Jan/2026 18:16:36] "GET / HTTP/1.1" 200 -
+2026-01-29 18:16:42,866 - INFO - Requête d'upload reçue
+2026-01-29 18:16:42,890 - INFO - Fichier sauvegardé: uploads\input_20260129_181642_877160.jpg
+2026-01-29 18:16:42,891 - INFO - Début du traitement de l'image: uploads\input_20260129_181642_877160.jpg
+2026-01-29 18:16:42,986 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 18:16:42,986 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 18:16:43,054 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 18:16:43,054 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 18:16:43,061 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 18:16:43,071 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 18:16:43,082 - INFO - Nombre de contours trouvés: 147
+2026-01-29 18:16:50,376 - INFO - Détection terminée: 11 chiffre(s) filtrés
+2026-01-29 18:16:50,377 - INFO - Position 2: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 18:16:50,377 - INFO - Position 4: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 18:16:50,377 - INFO - Position 6: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 18:16:50,378 - INFO - Position 8: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 18:16:50,379 - INFO - Validation: 7 chiffres trouvés dans '0000288'
+2026-01-29 18:16:50,380 - WARNING - Trop de chiffres: 7 > 6, tronqué à 000028
+2026-01-29 18:16:50,380 - INFO - Détection réussie: 11 chiffres -> 000028 (83.8%)
+2026-01-29 18:16:50,385 - INFO - Lecture finale: 000028, Confiance: 83.8%
+2026-01-29 18:16:50,406 - INFO - Image résultat sauvegardée: uploads\result_20260129_181650.jpg
+2026-01-29 18:16:50,834 - INFO - Requête traitée avec succès
+2026-01-29 18:16:50,886 - INFO - 127.0.0.1 - - [29/Jan/2026 18:16:50] "POST /upload HTTP/1.1" 200 -
+2026-01-29 18:16:51,247 - INFO - 127.0.0.1 - - [29/Jan/2026 18:16:51] "GET /uploads/result_20260129_181650.jpg?t=1769707010910 HTTP/1.1" 200 -
+2026-01-29 18:22:10,261 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 18:22:10,492 - INFO -  * Restarting with stat
+2026-01-29 18:22:18,783 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.39:5000
+2026-01-29 18:22:18,783 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 18:22:18,786 - INFO -  * Restarting with stat
+2026-01-29 18:22:20,116 - WARNING -  * Debugger is active!
+2026-01-29 18:22:20,123 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 18:22:25,340 - INFO - 127.0.0.1 - - [29/Jan/2026 18:22:25] "GET / HTTP/1.1" 200 -
+2026-01-29 18:22:25,871 - INFO - 127.0.0.1 - - [29/Jan/2026 18:22:25] "GET / HTTP/1.1" 200 -
+2026-01-29 18:22:30,727 - INFO - Requête d'upload reçue
+2026-01-29 18:22:30,748 - INFO - Fichier sauvegardé: uploads\input_20260129_182230_740443.jpg
+2026-01-29 18:22:30,749 - INFO - Début du traitement de l'image: uploads\input_20260129_182230_740443.jpg
+2026-01-29 18:22:30,812 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 18:22:30,814 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 18:22:30,819 - INFO - ROI spécifique compteur: (508, 212, 1185, 424)
+2026-01-29 18:22:30,819 - INFO - Détection dans ROI: (508, 212, 1185, 424), taille: 677x212
+2026-01-29 18:22:30,832 - INFO - Nombre de contours trouvés: 360
+2026-01-29 18:22:42,245 - INFO - Détection terminée: 15 caractère(s) détectés
+2026-01-29 18:22:42,245 - INFO - Groupes de chiffres trouvés: ['4']
+2026-01-29 18:22:42,246 - INFO - Validation compteur: '4' -> '4' (1 chiffres)
+2026-01-29 18:22:42,247 - INFO - Moins de 6 chiffres, pris tout: 4
+2026-01-29 18:22:42,247 - INFO - Utilisation de tous les chiffres (derniers): '4' -> '4'
+2026-01-29 18:22:42,247 - INFO - Lecture: 4, Confiance: 86.7%
+2026-01-29 18:22:42,248 - INFO - Statistiques: 1 vrais chiffres, 14 séparateurs
+2026-01-29 18:22:42,252 - INFO - Lecture finale: 4, Confiance: 86.7%
+2026-01-29 18:22:42,266 - INFO - Image résultat sauvegardée: uploads\result_20260129_182242.jpg
+2026-01-29 18:22:42,286 - INFO - Requête traitée avec succès
+2026-01-29 18:22:42,288 - INFO - 127.0.0.1 - - [29/Jan/2026 18:22:42] "POST /upload HTTP/1.1" 200 -
+2026-01-29 18:22:42,442 - INFO - 127.0.0.1 - - [29/Jan/2026 18:22:42] "GET /uploads/result_20260129_182242.jpg?t=1769707362293 HTTP/1.1" 200 -
+2026-01-29 18:22:51,569 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 18:22:51,707 - INFO -  * Restarting with stat
+2026-01-29 18:22:53,147 - WARNING -  * Debugger is active!
+2026-01-29 18:22:53,157 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 18:22:57,214 - INFO - 127.0.0.1 - - [29/Jan/2026 18:22:57] "GET / HTTP/1.1" 200 -
+2026-01-29 18:22:57,402 - INFO - 127.0.0.1 - - [29/Jan/2026 18:22:57] "GET / HTTP/1.1" 200 -
+2026-01-29 18:23:09,767 - INFO - Requête d'upload reçue
+2026-01-29 18:23:09,783 - INFO - Fichier sauvegardé: uploads\input_20260129_182309_778108.jpg
+2026-01-29 18:23:09,784 - INFO - Début du traitement de l'image: uploads\input_20260129_182309_778108.jpg
+2026-01-29 18:23:09,846 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 18:23:09,847 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 18:23:09,897 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 18:23:09,897 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 18:23:09,898 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 18:23:09,899 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 18:23:09,906 - INFO - Nombre de contours trouvés: 147
+2026-01-29 18:23:15,135 - INFO - Détection terminée: 11 chiffre(s) filtrés
+2026-01-29 18:23:15,137 - INFO - Position 2: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 18:23:15,137 - INFO - Position 4: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 18:23:15,138 - INFO - Position 6: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 18:23:15,138 - INFO - Position 8: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 18:23:15,139 - INFO - Validation: 7 chiffres trouvés dans '0000288'
+2026-01-29 18:23:15,139 - WARNING - Trop de chiffres: 7 > 6, tronqué à 000028
+2026-01-29 18:23:15,139 - INFO - Détection réussie: 11 chiffres -> 000028 (83.8%)
+2026-01-29 18:23:15,144 - INFO - Lecture finale: 000028, Confiance: 83.8%
+2026-01-29 18:23:15,159 - INFO - Image résultat sauvegardée: uploads\result_20260129_182315.jpg
+2026-01-29 18:23:15,185 - INFO - Requête traitée avec succès
+2026-01-29 18:23:15,188 - INFO - 127.0.0.1 - - [29/Jan/2026 18:23:15] "POST /upload HTTP/1.1" 200 -
+2026-01-29 18:23:15,345 - INFO - 127.0.0.1 - - [29/Jan/2026 18:23:15] "GET /uploads/result_20260129_182315.jpg?t=1769707395191 HTTP/1.1" 200 -
+2026-01-29 20:23:19,521 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 20:23:19,766 - INFO -  * Restarting with stat
+2026-01-29 20:23:25,332 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2026-01-29 20:23:25,333 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 20:23:25,335 - INFO -  * Restarting with stat
+2026-01-29 20:23:27,087 - WARNING -  * Debugger is active!
+2026-01-29 20:23:27,100 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 20:23:31,137 - INFO - 127.0.0.1 - - [29/Jan/2026 20:23:31] "GET / HTTP/1.1" 200 -
+2026-01-29 20:23:32,464 - INFO - 127.0.0.1 - - [29/Jan/2026 20:23:32] "GET / HTTP/1.1" 200 -
+2026-01-29 21:03:01,188 - INFO - Requête d'upload reçue
+2026-01-29 21:03:01,211 - INFO - Fichier sauvegardé: uploads\input_20260129_210301_203466.jpg
+2026-01-29 21:03:01,211 - INFO - Début du traitement de l'image: uploads\input_20260129_210301_203466.jpg
+2026-01-29 21:03:01,290 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 21:03:01,291 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 21:03:01,343 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 21:03:01,344 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 21:03:01,344 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 21:03:01,345 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 21:03:01,351 - INFO - Nombre de contours trouvés: 147
+2026-01-29 21:03:08,255 - INFO - Détection terminée: 11 chiffre(s) filtrés
+2026-01-29 21:03:08,255 - INFO - Position 2: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 21:03:08,256 - INFO - Position 4: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 21:03:08,257 - INFO - Position 6: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 21:03:08,257 - INFO - Position 8: '1' détecté comme séparateur (aspect: 0.32)
+2026-01-29 21:03:08,258 - INFO - Validation: 7 chiffres trouvés dans '0000288'
+2026-01-29 21:03:08,258 - WARNING - Trop de chiffres: 7 > 6, tronqué à 000028
+2026-01-29 21:03:08,259 - INFO - Détection réussie: 11 chiffres -> 000028 (83.8%)
+2026-01-29 21:03:08,262 - INFO - Lecture finale: 000028, Confiance: 83.8%
+2026-01-29 21:03:08,279 - INFO - Image résultat sauvegardée: uploads\result_20260129_210308.jpg
+2026-01-29 21:03:08,305 - INFO - Requête traitée avec succès
+2026-01-29 21:03:08,308 - INFO - 127.0.0.1 - - [29/Jan/2026 21:03:08] "POST /upload HTTP/1.1" 200 -
+2026-01-29 21:03:08,478 - INFO - 127.0.0.1 - - [29/Jan/2026 21:03:08] "GET /uploads/result_20260129_210308.jpg?t=1769716988312 HTTP/1.1" 200 -
+2026-01-29 21:16:56,191 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 21:16:56,691 - INFO -  * Restarting with stat
+2026-01-29 21:17:04,659 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2026-01-29 21:17:04,660 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 21:17:04,664 - INFO -  * Restarting with stat
+2026-01-29 21:17:06,523 - WARNING -  * Debugger is active!
+2026-01-29 21:17:06,539 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 21:17:12,844 - INFO - 127.0.0.1 - - [29/Jan/2026 21:17:12] "GET / HTTP/1.1" 200 -
+2026-01-29 21:17:13,681 - INFO - 127.0.0.1 - - [29/Jan/2026 21:17:13] "GET / HTTP/1.1" 200 -
+2026-01-29 21:17:20,346 - INFO - Requête d'upload reçue
+2026-01-29 21:17:20,394 - INFO - Fichier sauvegardé: uploads\input_20260129_211720_379576.jpg
+2026-01-29 21:17:20,397 - INFO - Début du traitement de l'image: uploads\input_20260129_211720_379576.jpg
+2026-01-29 21:17:20,493 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 21:17:20,494 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 21:17:20,558 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 21:17:20,559 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 21:17:20,560 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 21:17:20,560 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 21:17:20,570 - INFO - Nombre de contours trouvés: 167
+2026-01-29 21:17:24,705 - INFO - Détection terminée: 6 chiffre(s) après filtrage
+2026-01-29 21:17:24,705 - INFO - Position 3: '1' détecté comme séparateur (aspect: 0.45)
+2026-01-29 21:17:24,706 - INFO - Validation: 5 chiffres trouvés dans '00088'
+2026-01-29 21:17:24,706 - WARNING - Trop peu de chiffres: 5 < 6
+2026-01-29 21:17:24,706 - INFO - Détection réussie: 6 chiffres -> 00088 (79.3%)
+2026-01-29 21:17:24,710 - INFO - Lecture finale: 00088, Confiance: 79.3%
+2026-01-29 21:17:24,727 - INFO - Image résultat sauvegardée: uploads\result_20260129_211724.jpg
+2026-01-29 21:17:24,767 - INFO - Requête traitée avec succès
+2026-01-29 21:17:24,772 - INFO - 127.0.0.1 - - [29/Jan/2026 21:17:24] "POST /upload HTTP/1.1" 200 -
+2026-01-29 21:17:25,030 - INFO - 127.0.0.1 - - [29/Jan/2026 21:17:25] "GET /uploads/result_20260129_211724.jpg?t=1769717844778 HTTP/1.1" 200 -
+2026-01-29 21:28:39,856 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 21:28:40,066 - INFO -  * Restarting with stat
+2026-01-29 21:28:45,168 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2026-01-29 21:28:45,177 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 21:28:45,189 - INFO -  * Restarting with stat
+2026-01-29 21:28:46,963 - WARNING -  * Debugger is active!
+2026-01-29 21:28:46,977 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 21:29:05,422 - INFO - 127.0.0.1 - - [29/Jan/2026 21:29:05] "GET / HTTP/1.1" 200 -
+2026-01-29 21:29:06,190 - INFO - 127.0.0.1 - - [29/Jan/2026 21:29:06] "GET / HTTP/1.1" 200 -
+2026-01-29 21:29:15,968 - INFO - Requête d'upload reçue
+2026-01-29 21:29:16,030 - INFO - Fichier sauvegardé: uploads\input_20260129_212916_012018.jpg
+2026-01-29 21:29:16,036 - INFO - Début du traitement de l'image: uploads\input_20260129_212916_012018.jpg
+2026-01-29 21:29:16,197 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 21:29:16,199 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 21:29:16,400 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 21:29:16,428 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 21:29:16,514 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 21:29:16,576 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 21:29:16,591 - INFO - Nombre de contours trouvés: 118
+2026-01-29 21:29:20,957 - INFO - Détection terminée: 2 chiffre(s) après filtrage
+2026-01-29 21:29:20,958 - INFO - Validation: 2 chiffres trouvés dans '00'
+2026-01-29 21:29:20,959 - WARNING - Trop peu de chiffres: 2 < 6
+2026-01-29 21:29:20,959 - INFO - Détection réussie: 2 chiffres -> 00 (69.3%)
+2026-01-29 21:29:20,964 - INFO - Lecture finale: 00, Confiance: 69.3%
+2026-01-29 21:29:21,000 - INFO - Image résultat sauvegardée: uploads\result_20260129_212920.jpg
+2026-01-29 21:29:21,839 - INFO - Requête traitée avec succès
+2026-01-29 21:29:21,876 - INFO - 127.0.0.1 - - [29/Jan/2026 21:29:21] "POST /upload HTTP/1.1" 200 -
+2026-01-29 21:29:22,447 - INFO - 127.0.0.1 - - [29/Jan/2026 21:29:22] "GET /uploads/result_20260129_212920.jpg?t=1769718561917 HTTP/1.1" 200 -
+2026-01-29 21:42:24,224 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 21:42:25,083 - INFO -  * Restarting with stat
+2026-01-29 21:42:34,031 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2026-01-29 21:42:34,033 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 21:42:34,036 - INFO -  * Restarting with stat
+2026-01-29 21:42:39,902 - WARNING -  * Debugger is active!
+2026-01-29 21:42:39,942 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 21:42:56,685 - INFO - 127.0.0.1 - - [29/Jan/2026 21:42:56] "GET / HTTP/1.1" 200 -
+2026-01-29 21:42:58,241 - INFO - 127.0.0.1 - - [29/Jan/2026 21:42:58] "GET / HTTP/1.1" 200 -
+2026-01-29 21:43:08,538 - INFO - Requête d'upload reçue
+2026-01-29 21:43:08,575 - INFO - Fichier sauvegardé: uploads\input_20260129_214308_565097.jpg
+2026-01-29 21:43:08,577 - INFO - Début du traitement de l'image: uploads\input_20260129_214308_565097.jpg
+2026-01-29 21:43:08,722 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 21:43:08,723 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 21:43:08,842 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 21:43:08,843 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 21:43:08,847 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 21:43:08,850 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 21:43:08,872 - INFO - Nombre de contours trouvés: 73
+2026-01-29 21:43:08,875 - INFO - Détection terminée: 0 chiffre(s) après filtrage
+2026-01-29 21:43:08,876 - WARNING - Trop peu de chiffres détectés (0), tentative alternative
+2026-01-29 21:43:11,886 - INFO - Méthode alternative a trouvé 1 chiffres
+2026-01-29 21:43:11,887 - INFO - Chiffres détectés avant post-traitement: 8
+2026-01-29 21:43:11,888 - INFO - Validation: 1 chiffres trouvés dans '8'
+2026-01-29 21:43:11,895 - WARNING - Trop peu de chiffres: 1 < 6
+2026-01-29 21:43:11,905 - INFO - Détection réussie: 1 chiffres -> 8 (66.5%)
+2026-01-29 21:43:11,910 - INFO - Lecture finale: 8, Confiance: 66.5%
+2026-01-29 21:43:11,931 - INFO - Image résultat sauvegardée: uploads\result_20260129_214311.jpg
+2026-01-29 21:43:11,978 - INFO - Requête traitée avec succès
+2026-01-29 21:43:12,120 - ERROR - Erreur lors du traitement: Object of type int64 is not JSON serializable
+Traceback (most recent call last):
+  File "C:\Users\ossama\Desktop\CNN-Based-Water-Meter-Digit-Recognition\app.py", line 1298, in upload
+    return jsonify({
+  File "C:\Users\ossama\Desktop\CNN-Based-Water-Meter-Digit-Recognition\venv\lib\site-packages\flask\json\__init__.py", line 170, in jsonify
+    return current_app.json.response(*args, **kwargs)  # type: ignore[return-value]
+  File "C:\Users\ossama\Desktop\CNN-Based-Water-Meter-Digit-Recognition\venv\lib\site-packages\flask\json\provider.py", line 214, in response
+    f"{self.dumps(obj, **dump_args)}\n", mimetype=self.mimetype
+  File "C:\Users\ossama\Desktop\CNN-Based-Water-Meter-Digit-Recognition\venv\lib\site-packages\flask\json\provider.py", line 179, in dumps
+    return json.dumps(obj, **kwargs)
+  File "C:\Users\ossama\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+  File "C:\Users\ossama\AppData\Local\Programs\Python\Python310\lib\json\encoder.py", line 201, in encode
+    chunks = list(chunks)
+  File "C:\Users\ossama\AppData\Local\Programs\Python\Python310\lib\json\encoder.py", line 431, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "C:\Users\ossama\AppData\Local\Programs\Python\Python310\lib\json\encoder.py", line 405, in _iterencode_dict
+    yield from chunks
+  File "C:\Users\ossama\AppData\Local\Programs\Python\Python310\lib\json\encoder.py", line 325, in _iterencode_list
+    yield from chunks
+  File "C:\Users\ossama\AppData\Local\Programs\Python\Python310\lib\json\encoder.py", line 405, in _iterencode_dict
+    yield from chunks
+  File "C:\Users\ossama\AppData\Local\Programs\Python\Python310\lib\json\encoder.py", line 405, in _iterencode_dict
+    yield from chunks
+  File "C:\Users\ossama\AppData\Local\Programs\Python\Python310\lib\json\encoder.py", line 438, in _iterencode
+    o = _default(o)
+  File "C:\Users\ossama\Desktop\CNN-Based-Water-Meter-Digit-Recognition\venv\lib\site-packages\flask\json\provider.py", line 121, in _default
+    raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
+TypeError: Object of type int64 is not JSON serializable
+
+2026-01-29 21:43:12,154 - INFO - 127.0.0.1 - - [29/Jan/2026 21:43:12] "[35m[1mPOST /upload HTTP/1.1[0m" 500 -
+2026-01-29 21:53:30,636 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 21:53:31,024 - INFO -  * Restarting with stat
+2026-01-29 21:53:56,990 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2026-01-29 21:53:56,993 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 21:53:56,998 - INFO -  * Restarting with stat
+2026-01-29 21:54:00,241 - WARNING -  * Debugger is active!
+2026-01-29 21:54:00,256 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 21:55:35,201 - INFO - 127.0.0.1 - - [29/Jan/2026 21:55:35] "GET / HTTP/1.1" 200 -
+2026-01-29 21:55:36,095 - INFO - 127.0.0.1 - - [29/Jan/2026 21:55:36] "GET / HTTP/1.1" 200 -
+2026-01-29 21:55:42,414 - INFO - Requête d'upload reçue
+2026-01-29 21:55:42,436 - INFO - Fichier sauvegardé: uploads\input_20260129_215542_431628.jpg
+2026-01-29 21:55:42,446 - INFO - Début du traitement de l'image: uploads\input_20260129_215542_431628.jpg
+2026-01-29 21:55:42,602 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 21:55:42,611 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 21:55:42,728 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 21:55:42,728 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 21:55:42,730 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 21:55:42,732 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 21:55:42,763 - INFO - Nombre de contours trouvés: 73
+2026-01-29 21:55:42,767 - INFO - Détection terminée: 0 chiffre(s) après filtrage
+2026-01-29 21:55:42,768 - WARNING - Trop peu de chiffres détectés (0), tentative alternative
+2026-01-29 21:55:46,000 - INFO - Méthode alternative a trouvé 1 chiffres
+2026-01-29 21:55:46,003 - INFO - Chiffres détectés avant post-traitement: 8
+2026-01-29 21:55:46,005 - INFO - Validation: 1 chiffres trouvés dans '8'
+2026-01-29 21:55:46,012 - WARNING - Trop peu de chiffres: 1 < 6
+2026-01-29 21:55:46,014 - INFO - Détection réussie: 1 chiffres -> 8 (66.5%)
+2026-01-29 21:55:46,019 - INFO - Lecture finale: 8, Confiance: 66.5%
+2026-01-29 21:55:46,054 - INFO - Image résultat sauvegardée: uploads\result_20260129_215546.jpg
+2026-01-29 21:55:46,102 - INFO - Requête traitée avec succès
+2026-01-29 21:55:46,112 - INFO - 127.0.0.1 - - [29/Jan/2026 21:55:46] "POST /upload HTTP/1.1" 200 -
+2026-01-29 21:55:46,527 - INFO - 127.0.0.1 - - [29/Jan/2026 21:55:46] "GET /uploads/result_20260129_215546.jpg?t=1769720146116 HTTP/1.1" 200 -
+2026-01-29 21:59:16,283 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 21:59:16,496 - INFO -  * Restarting with stat
+2026-01-29 21:59:19,740 - WARNING -  * Debugger is active!
+2026-01-29 21:59:19,753 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 22:00:36,819 - INFO - 127.0.0.1 - - [29/Jan/2026 22:00:36] "GET / HTTP/1.1" 200 -
+2026-01-29 22:00:37,427 - INFO - 127.0.0.1 - - [29/Jan/2026 22:00:37] "GET / HTTP/1.1" 200 -
+2026-01-29 22:00:45,356 - INFO - Requête d'upload reçue
+2026-01-29 22:00:45,384 - INFO - Fichier sauvegardé: uploads\input_20260129_220045_374677.jpg
+2026-01-29 22:00:45,392 - INFO - Début du traitement de l'image: uploads\input_20260129_220045_374677.jpg
+2026-01-29 22:00:45,500 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 22:00:45,501 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 22:00:45,667 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 22:00:45,671 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 22:00:45,672 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 22:00:45,672 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 22:00:45,681 - INFO - Nombre de contours trouvés: 147
+2026-01-29 22:01:10,098 - INFO - Détection terminée: 11 chiffre(s) filtrés
+2026-01-29 22:01:10,099 - INFO - Validation: 11 chiffres trouvés dans '00101012188'
+2026-01-29 22:01:10,102 - WARNING - Trop de chiffres: 11 > 6, tronqué à 001010
+2026-01-29 22:01:10,102 - INFO - Détection réussie: 11 chiffres -> 001010 (90.2%)
+2026-01-29 22:01:10,106 - INFO - Lecture finale: 001010, Confiance: 90.2%
+2026-01-29 22:01:10,123 - INFO - Image résultat sauvegardée: uploads\result_20260129_220110.jpg
+2026-01-29 22:01:10,181 - INFO - Requête traitée avec succès
+2026-01-29 22:01:10,185 - INFO - 127.0.0.1 - - [29/Jan/2026 22:01:10] "POST /upload HTTP/1.1" 200 -
+2026-01-29 22:01:10,424 - INFO - 127.0.0.1 - - [29/Jan/2026 22:01:10] "GET /uploads/result_20260129_220110.jpg?t=1769720470193 HTTP/1.1" 200 -
+2026-01-29 22:13:52,634 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 22:13:53,012 - INFO -  * Restarting with stat
+2026-01-29 22:13:58,236 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2026-01-29 22:13:58,242 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 22:13:58,246 - INFO -  * Restarting with stat
+2026-01-29 22:14:00,428 - WARNING -  * Debugger is active!
+2026-01-29 22:14:00,441 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 22:14:01,432 - INFO - 127.0.0.1 - - [29/Jan/2026 22:14:01] "GET / HTTP/1.1" 200 -
+2026-01-29 22:14:02,109 - INFO - 127.0.0.1 - - [29/Jan/2026 22:14:02] "GET / HTTP/1.1" 200 -
+2026-01-29 22:14:43,695 - INFO - Requête d'upload reçue
+2026-01-29 22:14:43,810 - INFO - Fichier sauvegardé: uploads\input_20260129_221443_799626.jpg
+2026-01-29 22:14:43,813 - INFO - Début du traitement de l'image: uploads\input_20260129_221443_799626.jpg
+2026-01-29 22:14:43,915 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 22:14:43,936 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 22:14:44,099 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 22:14:44,105 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 22:14:44,113 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 22:14:44,116 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 22:14:44,133 - INFO - Nombre de contours trouvés: 38
+2026-01-29 22:14:49,296 - INFO - Détection terminée: 1 chiffre(s) filtrés
+2026-01-29 22:14:49,306 - INFO - Validation: 1 chiffres trouvés dans '0'
+2026-01-29 22:14:49,308 - WARNING - Trop peu de chiffres: 1 < 6
+2026-01-29 22:14:49,840 - WARNING - Pas assez de chiffres détectés
+2026-01-29 22:14:49,844 - INFO - Lecture finale: , Confiance: 30.0%
+2026-01-29 22:14:49,860 - INFO - Image résultat sauvegardée: uploads\result_20260129_221449.jpg
+2026-01-29 22:14:49,861 - INFO - Traitement terminé. Résultat: {'reading': '', 'confidence': '30.0%', 'image_url': '/uploads/result_20260129_221449.jpg', 'debug_url': '/debug/20260129_221444_122627_original_roi.jpg', 'digit_details': [], 'digit_count': 0, 'total_digits_detected': 1, 'all_detected_digits': '0', 'sequence_valid': True, 'timestamp': '2026-01-29 22:14:49', 'debug_timestamp': '20260129_221444_122627'}
+2026-01-29 22:14:49,864 - INFO - Requête traitée avec succès
+2026-01-29 22:14:49,865 - INFO - 127.0.0.1 - - [29/Jan/2026 22:14:49] "POST /upload HTTP/1.1" 200 -
+2026-01-29 22:14:50,193 - INFO - 127.0.0.1 - - [29/Jan/2026 22:14:50] "GET /uploads/result_20260129_221449.jpg?t=1769721289870 HTTP/1.1" 200 -
+2026-01-29 22:26:18,096 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 22:26:25,423 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2026-01-29 22:26:25,424 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 22:26:25,428 - INFO -  * Restarting with stat
+2026-01-29 22:26:28,514 - WARNING -  * Debugger is active!
+2026-01-29 22:26:28,526 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 22:26:29,318 - INFO - 127.0.0.1 - - [29/Jan/2026 22:26:29] "GET / HTTP/1.1" 200 -
+2026-01-29 22:26:30,189 - INFO - 127.0.0.1 - - [29/Jan/2026 22:26:30] "GET / HTTP/1.1" 200 -
+2026-01-29 22:26:42,314 - INFO - Requête d'upload reçue
+2026-01-29 22:26:42,335 - INFO - Fichier sauvegardé: uploads\input_20260129_222642_330236.jpg
+2026-01-29 22:26:42,337 - INFO - Début du traitement de l'image: uploads\input_20260129_222642_330236.jpg
+2026-01-29 22:26:42,504 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 22:26:42,505 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 22:26:42,599 - INFO - Nombre de contours détectés comme chiffres: 1
+2026-01-29 22:26:42,600 - INFO - Région détectée automatiquement: (0, 0, 1694, 1062)
+2026-01-29 22:26:42,605 - INFO - Utilisation de la région automatique étendue: (0, 0, 1694, 1062)
+2026-01-29 22:26:42,609 - INFO - Détection dans ROI: (0, 0, 1694, 1062), taille: 1694x1062
+2026-01-29 22:26:42,738 - INFO - Nombre de contours trouvés: 1323
+2026-01-29 22:26:42,797 - INFO - Chiffres avant filtrage des doublons: 0
+2026-01-29 22:26:42,934 - INFO - Détection terminée: 0 chiffre(s) filtrés
+2026-01-29 22:26:43,028 - WARNING - Aucun chiffre détecté
+2026-01-29 22:26:43,036 - INFO - Tentative de fallback OCR...
+2026-01-29 22:27:01,246 - INFO - Fallback réussi: 0000211837202063209901393720 via thresh0_config--psm 6 --oem 3 -c tessedit_char_whitelist=0123456789
+2026-01-29 22:27:01,247 - INFO - Fallback réussi: 0000211837202063209901393720 (80.0%)
+2026-01-29 22:27:01,254 - INFO - Lecture finale: 0000211837202063209901393720, Confiance: 80.0%
+2026-01-29 22:27:01,291 - INFO - Image résultat sauvegardée: uploads\result_20260129_222701.jpg
+2026-01-29 22:27:02,150 - INFO - Requête traitée avec succès
+2026-01-29 22:27:02,247 - INFO - 127.0.0.1 - - [29/Jan/2026 22:27:02] "POST /upload HTTP/1.1" 200 -
+2026-01-29 22:27:04,386 - INFO - 127.0.0.1 - - [29/Jan/2026 22:27:04] "GET /uploads/result_20260129_222701.jpg?t=1769722023639 HTTP/1.1" 200 -
+2026-01-29 22:27:57,575 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 22:27:57,721 - INFO -  * Restarting with stat
+2026-01-29 22:28:02,382 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2026-01-29 22:28:02,384 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 22:28:02,387 - INFO -  * Restarting with stat
+2026-01-29 22:28:04,195 - WARNING -  * Debugger is active!
+2026-01-29 22:28:04,207 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 22:28:09,596 - INFO - 127.0.0.1 - - [29/Jan/2026 22:28:09] "GET / HTTP/1.1" 200 -
+2026-01-29 22:28:10,297 - INFO - 127.0.0.1 - - [29/Jan/2026 22:28:10] "GET / HTTP/1.1" 200 -
+2026-01-29 22:28:16,689 - INFO - Requête d'upload reçue
+2026-01-29 22:28:16,725 - INFO - Fichier sauvegardé: uploads\input_20260129_222816_713959.jpg
+2026-01-29 22:28:16,727 - INFO - Début du traitement de l'image: uploads\input_20260129_222816_713959.jpg
+2026-01-29 22:28:16,988 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 22:28:16,998 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 22:28:17,246 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 22:28:17,247 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 22:28:17,249 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 22:28:17,249 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 22:28:17,267 - INFO - Nombre de contours trouvés: 147
+2026-01-29 22:28:41,238 - INFO - Détection terminée: 11 chiffre(s) filtrés
+2026-01-29 22:28:41,239 - INFO - Validation: 11 chiffres trouvés dans '00101012188'
+2026-01-29 22:28:41,239 - WARNING - Trop de chiffres: 11 > 6, tronqué à 001010
+2026-01-29 22:28:41,240 - INFO - Détection réussie: 11 chiffres -> 001010 (90.2%)
+2026-01-29 22:28:41,247 - INFO - Lecture finale: 001010, Confiance: 90.2%
+2026-01-29 22:28:41,274 - INFO - Image résultat sauvegardée: uploads\result_20260129_222841.jpg
+2026-01-29 22:28:41,316 - INFO - Requête traitée avec succès
+2026-01-29 22:28:41,318 - INFO - 127.0.0.1 - - [29/Jan/2026 22:28:41] "POST /upload HTTP/1.1" 200 -
+2026-01-29 22:28:41,544 - INFO - 127.0.0.1 - - [29/Jan/2026 22:28:41] "GET /uploads/result_20260129_222841.jpg?t=1769722121328 HTTP/1.1" 200 -
+2026-01-29 22:29:17,625 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 22:29:18,744 - INFO -  * Restarting with stat
+2026-01-29 22:29:24,837 - WARNING -  * Debugger is active!
+2026-01-29 22:29:24,849 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 22:31:49,595 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 22:31:49,793 - INFO -  * Restarting with stat
+2026-01-29 22:31:53,156 - WARNING -  * Debugger is active!
+2026-01-29 22:31:53,166 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 22:32:03,528 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 22:32:03,689 - INFO -  * Restarting with stat
+2026-01-29 22:34:17,357 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2026-01-29 22:34:17,360 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 22:34:17,363 - INFO -  * Restarting with stat
+2026-01-29 22:34:20,911 - WARNING -  * Debugger is active!
+2026-01-29 22:34:20,929 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 22:34:21,309 - INFO - 127.0.0.1 - - [29/Jan/2026 22:34:21] "GET / HTTP/1.1" 200 -
+2026-01-29 22:34:22,008 - INFO - 127.0.0.1 - - [29/Jan/2026 22:34:22] "GET / HTTP/1.1" 200 -
+2026-01-29 22:34:29,685 - INFO - Requête d'upload reçue
+2026-01-29 22:34:29,722 - INFO - Fichier sauvegardé: uploads\input_20260129_223429_706014.jpg
+2026-01-29 22:34:29,744 - INFO - Début du traitement de l'image: uploads\input_20260129_223429_706014.jpg
+2026-01-29 22:34:29,903 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 22:34:29,905 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 22:34:30,060 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 22:34:30,076 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 22:34:30,082 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 22:34:30,086 - ERROR - Erreur lors du traitement: name 'full_image' is not defined
+Traceback (most recent call last):
+  File "C:\Users\ossama\Desktop\CNN-Based-Water-Meter-Digit-Recognition\app.py", line 663, in upload
+    result_data = process_image(input_path)
+  File "C:\Users\ossama\Desktop\CNN-Based-Water-Meter-Digit-Recognition\app.py", line 539, in process_image
+    reading, confidence, output_image, digit_info, debug_timestamp = extract_precise_meter_reading(image)
+  File "C:\Users\ossama\Desktop\CNN-Based-Water-Meter-Digit-Recognition\app.py", line 399, in extract_precise_meter_reading
+    digit_roi_color = full_image[
+NameError: name 'full_image' is not defined
+
+2026-01-29 22:34:30,094 - INFO - 127.0.0.1 - - [29/Jan/2026 22:34:30] "[35m[1mPOST /upload HTTP/1.1[0m" 500 -
+2026-01-29 22:34:41,026 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 22:34:41,276 - INFO -  * Restarting with stat
+2026-01-29 22:34:45,384 - WARNING -  * Debugger is active!
+2026-01-29 22:34:45,396 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 22:37:57,146 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 22:37:57,428 - INFO -  * Restarting with stat
+2026-01-29 22:50:35,864 - WARNING -  * Debugger is active!
+2026-01-29 22:50:35,875 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 22:50:50,844 - INFO - 127.0.0.1 - - [29/Jan/2026 22:50:50] "GET / HTTP/1.1" 200 -
+2026-01-29 22:50:52,144 - INFO - 127.0.0.1 - - [29/Jan/2026 22:50:52] "GET / HTTP/1.1" 200 -
+2026-01-29 22:55:42,765 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 22:55:46,946 - WARNING -  * Debugger is active!
+2026-01-29 22:55:46,961 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 22:56:13,264 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2026-01-29 22:56:13,265 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 22:56:13,267 - INFO -  * Restarting with stat
+2026-01-29 22:56:14,823 - WARNING -  * Debugger is active!
+2026-01-29 22:56:14,834 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 22:56:20,945 - INFO - 127.0.0.1 - - [29/Jan/2026 22:56:20] "GET / HTTP/1.1" 200 -
+2026-01-29 22:56:21,617 - INFO - 127.0.0.1 - - [29/Jan/2026 22:56:21] "GET / HTTP/1.1" 200 -
+2026-01-29 22:56:27,076 - INFO - Requête d'upload reçue
+2026-01-29 22:56:27,103 - INFO - Fichier sauvegardé: uploads\input_20260129_225627_097778.jpg
+2026-01-29 22:56:27,104 - INFO - Début du traitement de l'image: uploads\input_20260129_225627_097778.jpg
+2026-01-29 22:56:27,201 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 22:56:27,203 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 22:56:27,307 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 22:56:27,318 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 22:56:27,324 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 22:56:27,325 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 22:56:27,343 - INFO - Nombre de contours trouvés: 147
+2026-01-29 22:56:27,348 - INFO - Seuils de détection - Hauteur max: 63.6px, Ratio max: 0.8
+2026-01-29 22:56:31,402 - INFO - Détection terminée: 8 chiffre(s) filtrés (sur 8 initiaux)
+2026-01-29 22:56:31,404 - INFO - Validation: 8 chiffres trouvés dans '00002188'
+2026-01-29 22:56:31,405 - WARNING - Trop de chiffres: 8 > 6, tronqué à 000021
+2026-01-29 22:56:31,406 - INFO - Détection réussie: 8 chiffres -> 000021 (88.5%)
+2026-01-29 22:56:31,409 - INFO - Lecture finale: 000021, Confiance: 88.5%
+2026-01-29 22:56:31,429 - INFO - Image résultat sauvegardée: uploads\result_20260129_225631.jpg
+2026-01-29 22:56:31,467 - INFO - Requête traitée avec succès
+2026-01-29 22:56:31,470 - INFO - 127.0.0.1 - - [29/Jan/2026 22:56:31] "POST /upload HTTP/1.1" 200 -
+2026-01-29 22:56:32,009 - INFO - 127.0.0.1 - - [29/Jan/2026 22:56:32] "GET /uploads/result_20260129_225631.jpg?t=1769723791483 HTTP/1.1" 200 -
+2026-01-29 22:59:37,268 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 22:59:37,567 - INFO -  * Restarting with stat
+2026-01-29 22:59:40,882 - WARNING -  * Debugger is active!
+2026-01-29 22:59:40,896 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 23:00:00,129 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 23:00:00,356 - INFO -  * Restarting with stat
+2026-01-29 23:00:03,891 - WARNING -  * Debugger is active!
+2026-01-29 23:00:03,931 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 23:00:12,147 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 23:00:12,331 - INFO -  * Restarting with stat
+2026-01-29 23:00:14,768 - WARNING -  * Debugger is active!
+2026-01-29 23:00:14,781 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 23:00:17,376 - INFO -  * Detected change in 'C:\\Users\\ossama\\Desktop\\CNN-Based-Water-Meter-Digit-Recognition\\app.py', reloading
+2026-01-29 23:00:17,604 - INFO -  * Restarting with stat
+2026-01-29 23:01:07,473 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2026-01-29 23:01:07,474 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-29 23:01:07,477 - INFO -  * Restarting with stat
+2026-01-29 23:01:09,341 - WARNING -  * Debugger is active!
+2026-01-29 23:01:09,351 - INFO -  * Debugger PIN: 117-507-004
+2026-01-29 23:01:12,044 - INFO - 127.0.0.1 - - [29/Jan/2026 23:01:12] "GET / HTTP/1.1" 200 -
+2026-01-29 23:01:12,963 - INFO - 127.0.0.1 - - [29/Jan/2026 23:01:12] "GET / HTTP/1.1" 200 -
+2026-01-29 23:01:18,894 - INFO - Requête d'upload reçue
+2026-01-29 23:01:18,919 - INFO - Fichier sauvegardé: uploads\input_20260129_230118_908902.jpg
+2026-01-29 23:01:18,925 - INFO - Début du traitement de l'image: uploads\input_20260129_230118_908902.jpg
+2026-01-29 23:01:19,027 - INFO - Image chargée: 1694x1062 pixels
+2026-01-29 23:01:19,028 - INFO - Traitement d'image de taille: 1694x1062
+2026-01-29 23:01:19,092 - INFO - Nombre de contours détectés comme chiffres: 0
+2026-01-29 23:01:19,094 - INFO - Aucune région détectée automatiquement, utilisation de la ROI par défaut
+2026-01-29 23:01:19,096 - INFO - Utilisation de la ROI par défaut: (592, 297, 1101, 403)
+2026-01-29 23:01:19,096 - INFO - Détection dans ROI: (592, 297, 1101, 403), taille: 509x106
+2026-01-29 23:01:19,111 - INFO - Nombre de contours trouvés: 147
+2026-01-29 23:01:19,113 - INFO - Seuils de détection - Hauteur max: 63.6px, Ratio max: 0.8
+2026-01-29 23:01:24,323 - INFO - Détection terminée: 8 chiffre(s) filtrés (sur 8 initiaux)
+2026-01-29 23:01:24,324 - INFO - Longueur attendue déterminée dynamiquement: 8 chiffres
+2026-01-29 23:01:24,325 - INFO - Validation: 8 chiffres trouvés dans '00002188'
+2026-01-29 23:01:24,325 - INFO - Lecture validée: 00002188
+2026-01-29 23:01:24,326 - INFO - Détection réussie: 8 chiffres -> 00002188 (88.5%)
+2026-01-29 23:01:24,329 - INFO - Lecture finale: 00002188, Confiance: 88.5%
+2026-01-29 23:01:24,352 - INFO - Image résultat sauvegardée: uploads\result_20260129_230124.jpg
+2026-01-29 23:01:24,408 - INFO - Requête traitée avec succès
+2026-01-29 23:01:24,421 - INFO - 127.0.0.1 - - [29/Jan/2026 23:01:24] "POST /upload HTTP/1.1" 200 -
+2026-01-29 23:01:24,687 - INFO - 127.0.0.1 - - [29/Jan/2026 23:01:24] "GET /uploads/result_20260129_230124.jpg?t=1769724084427 HTTP/1.1" 200 -

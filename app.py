@@ -71,12 +71,19 @@ def find_digit_region(image):
         area = cv2.contourArea(contour)
         aspect_ratio = w / h if h > 0 else 0
         
-        # Critères pour des chiffres
-        if (h > image.shape[0] * 0.15 and  # Hauteur minimale
+        # ================== CONDITION MODIFIÉE ==================
+        # Critères pour des chiffres (éviter les chiffres trop grands)
+        max_height_ratio = 0.25  # Maximum 25% de la hauteur de l'image
+        min_aspect_ratio = 0.3
+        max_aspect_ratio = 1.2
+        
+        if (h < image.shape[0] * max_height_ratio and  # Éviter les très grands chiffres
+            h > image.shape[0] * 0.05 and  # Hauteur minimale
             w > image.shape[1] * 0.02 and   # Largeur minimale
             area > 100 and                  # Aire minimale
-            0.3 < aspect_ratio < 1.5):      # Ratio raisonnable
+            min_aspect_ratio < aspect_ratio < max_aspect_ratio):  # Ratio raisonnable
             digit_contours.append((x, y, w, h))
+        # =====================================================
     
     logger.info(f"Nombre de contours détectés comme chiffres: {len(digit_contours)}")
     
@@ -109,7 +116,7 @@ def find_digit_region(image):
     logger.info("Aucune région détectée automatiquement, utilisation de la ROI par défaut")
     return None
 
-def validate_reading(reading, expected_length=6):
+def validate_reading(reading, expected_length=None):
     """Valide et corrige si nécessaire la lecture"""
     if not reading:
         return reading
@@ -118,6 +125,12 @@ def validate_reading(reading, expected_length=6):
     digits = re.findall(r'\d', reading)
     
     logger.info(f"Validation: {len(digits)} chiffres trouvés dans '{reading}'")
+    
+    # Si aucune longueur attendue spécifiée, retourner tous les chiffres
+    if expected_length is None:
+        result = ''.join(digits)
+        logger.info(f"Aucune longueur attendue, retourne tous les chiffres: {result}")
+        return result
     
     if len(digits) < expected_length:
         # Si trop peu de chiffres, retourner ce qu'on a
@@ -173,20 +186,41 @@ def detect_precise_digits(image_roi, roi_coords, full_image):
     
     digit_info = []
     
-    # Paramètres pour la détection des chiffres
+    # ================== PARAMÈTRES AJOUTÉS ==================
+    # Hauteur maximale pour un chiffre (ignorer les chiffres trop grands)
+    max_digit_height_ratio = 0.6  # 60% de la hauteur de la ROI
+    max_digit_height_pixels = h_roi * max_digit_height_ratio
+    
+    # Hauteur minimale pour un chiffre
     min_digit_height = h_roi * 0.3
-    max_digit_height = h_roi * 0.9
     min_digit_width = w_roi * 0.03
+    
+    # Ratio largeur/hauteur maximal pour éviter les chiffres trop étroits/hauts
+    max_aspect_ratio = 0.8  # w/h maximal (éviter les chiffres trop hauts)
+    min_aspect_ratio = 0.25  # w/h minimal
+    
+    logger.info(f"Seuils de détection - Hauteur max: {max_digit_height_pixels:.1f}px, "
+                f"Ratio max: {max_aspect_ratio}")
+    # =====================================================
     
     for i, contour in enumerate(contours):
         x, y, w, h = cv2.boundingRect(contour)
         area = cv2.contourArea(contour)
+        aspect_ratio = w / h if h > 0 else 0
         
-        # Filtrage des contours
-        if (min_digit_height < h < max_digit_height and
+        # ================== FILTRAGE AMÉLIORÉ ==================
+        # Condition pour ignorer les chiffres trop grands (tall numbers)
+        is_too_tall = h > max_digit_height_pixels
+        is_too_narrow_tall = aspect_ratio < min_aspect_ratio and h > h_roi * 0.5
+        
+        # Vérifier si le contour ressemble à un chiffre (pas un symbole ou autre)
+        if (not is_too_tall and 
+            not is_too_narrow_tall and
+            min_digit_height < h < max_digit_height_pixels and
             w > min_digit_width and
             area > 80 and
-            0.25 < w/h < 1.2):
+            min_aspect_ratio < aspect_ratio < max_aspect_ratio):
+        # =====================================================
             
             # Calcul de la compacité
             perimeter = cv2.arcLength(contour, True)
@@ -256,10 +290,17 @@ def detect_precise_digits(image_roi, roi_coords, full_image):
                     if digit_text and (digit_text[0].isdigit() or digit_text[0] in 'm³'):
                         digit = digit_text[0] if digit_text[0] in '0123456789m³' else '?'
                         
-                        # Calcul de la confiance
+                        # Calcul de la confiance avec pénalité pour les hauteurs extrêmes
+                        height_ratio = h / h_roi
+                        height_score = 1.0 - min(0.5, abs(0.4 - height_ratio))  # Meilleur score pour 40% de la hauteur ROI
+                        
+                        # Pénalité supplémentaire si trop haut
+                        if height_ratio > 0.5:
+                            height_score *= 0.7
+                        
                         aspect_score = 1.0 - min(0.5, abs(0.6 - w/h))
-                        height_score = 1.0 - min(0.5, abs(0.6 - h/h_roi))
                         compactness_score = 1.0 - min(0.5, abs(0.4 - compactness))
+                        
                         confidence = min(95.0, 60.0 + (aspect_score + height_score + compactness_score) * 15.0)
                         
                         # Coordonnées absolues
@@ -278,10 +319,12 @@ def detect_precise_digits(image_roi, roi_coords, full_image):
                             'confidence': confidence,
                             'contour_area': area,
                             'aspect_ratio': w/h,
+                            'height_ratio': h/h_roi,
                             'compactness': compactness
                         })
                         
-                        logger.debug(f"Chiffre détecté: {digit} avec confiance {confidence:.1f}%")
+                        logger.debug(f"Chiffre détecté: {digit} avec confiance {confidence:.1f}%, "
+                                   f"ratio h/ROI: {h/h_roi:.2f}, aspect: {w/h:.2f}")
                         
                         # Sauvegarde de l'image de débogage
                         digit_debug_path = os.path.join(DEBUG_FOLDER, 
@@ -290,6 +333,21 @@ def detect_precise_digits(image_roi, roi_coords, full_image):
     
     # Tri des chiffres par position horizontale
     digit_info.sort(key=lambda d: d['center_x'])
+    
+    # ================== FILTRAGE SUPPLÉMENTAIRE ==================
+    # Après la détection, filtrer à nouveau pour éliminer les chiffres anormalement hauts
+    filtered_by_height = []
+    for digit_data in digit_info:
+        height_ratio = digit_data['height_ratio']
+        # Rejeter les chiffres dont la hauteur dépasse 65% de la ROI
+        if height_ratio < 0.65:
+            filtered_by_height.append(digit_data)
+        else:
+            logger.info(f"Ignoré chiffre trop grand: {digit_data['digit']}, "
+                       f"hauteur relative: {height_ratio:.2f}")
+    
+    digit_info = filtered_by_height
+    # =====================================================
     
     # Filtrage des doublons
     filtered_digits = []
@@ -310,7 +368,8 @@ def detect_precise_digits(image_roi, roi_coords, full_image):
                 filtered_digits[-1] = current
             # Sinon, ignorer le doublon (déjà gardé le premier)
     
-    logger.info(f"Détection terminée: {len(filtered_digits)} chiffre(s) filtrés")
+    logger.info(f"Détection terminée: {len(filtered_digits)} chiffre(s) filtrés "
+                f"(sur {len(digit_info)} initiaux)")
     return filtered_digits, debug_timestamp
 
 def draw_precise_boxes(full_image, digit_info, reading, roi_coords=None):
@@ -398,6 +457,24 @@ def extract_precise_meter_reading(image):
     # Détection précise de TOUS les chiffres dans la ROI
     digit_info, debug_timestamp = detect_precise_digits(roi, roi_coords, image)
     
+    # ================== MODIFICATION IMPORTANTE ==================
+    # Déterminer dynamiquement la longueur attendue
+    if digit_info:
+        # Compter seulement les chiffres (pas 'm³' ou autres)
+        detected_digits = [d for d in digit_info if d['digit'].isdigit()]
+        expected_length = len(detected_digits) if detected_digits else None
+        
+        if expected_length and expected_length > 0:
+            logger.info(f"Longueur attendue déterminée dynamiquement: {expected_length} chiffres")
+        else:
+            # Fallback à 6 si aucun chiffre n'est détecté
+            expected_length = 6
+            logger.info("Aucun chiffre détecté, utilisation du fallback: 6 chiffres")
+    else:
+        expected_length = 6
+        logger.info("Pas de détection de chiffres, utilisation du fallback: 6 chiffres")
+    # =====================================================
+    
     # Si nous détectons des chiffres
     if digit_info:
         # Trier par position X
@@ -406,8 +483,8 @@ def extract_precise_meter_reading(image):
         # Construction de la lecture à partir des chiffres détectés
         detected_digits = ''.join([d['digit'] for d in digit_info if d['digit'].isdigit()])
         
-        # Validation de la lecture
-        reading = validate_reading(detected_digits, expected_length=6)
+        # Validation de la lecture avec la longueur attendue dynamique
+        reading = validate_reading(detected_digits, expected_length=expected_length)
         
         if reading:
             # Calculer la confiance moyenne
@@ -423,7 +500,7 @@ def extract_precise_meter_reading(image):
             # Fallback: OCR sur toute la ROI
             config_full = "--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789"
             digits_text = pytesseract.image_to_string(roi, config=config_full).replace(" ", "")
-            reading = validate_reading(digits_text, expected_length=6)
+            reading = validate_reading(digits_text, expected_length=expected_length)
             
             if reading:
                 confidence = 65.0
@@ -449,7 +526,7 @@ def extract_precise_meter_reading(image):
                 # Rechercher un motif à plusieurs chiffres
                 match = re.search(r'(\d{5,})', text)
                 if match:
-                    reading = validate_reading(match.group(1), expected_length=6)
+                    reading = validate_reading(match.group(1), expected_length=expected_length)
                     confidence = 60.0
                     logger.info(f"Motif trouvé avec config {config}: {reading}")
                     break
@@ -461,7 +538,7 @@ def extract_precise_meter_reading(image):
             text = pytesseract.image_to_string(roi, config="--psm 3 --oem 3")
             all_digits = re.findall(r'\d', text)
             if len(all_digits) >= 5:
-                reading = validate_reading(''.join(all_digits), expected_length=6)
+                reading = validate_reading(''.join(all_digits), expected_length=expected_length)
                 confidence = 50.0
                 logger.info(f"Extraction depuis texte: {reading}")
             else:
@@ -485,6 +562,30 @@ def extract_precise_meter_reading(image):
         cv2.putText(output_image, f"Tous chiffres: {all_digits_str}",
                    (20, 150), cv2.FONT_HERSHEY_SIMPLEX,
                    0.6, (255, 200, 0), 2)
+    
+    # ================== AFFICHAGE AMÉLIORÉ ==================
+    # Afficher la lecture complète avec plus d'espace
+    if reading:
+        # Calculer la largeur du texte
+        text = f"Lecture: {reading}"
+        text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 1.2, 3)[0]
+        
+        # Arrière-plan pour la lecture (plus grand pour 8 chiffres)
+        cv2.rectangle(output_image, 
+                     (20, 20),
+                     (20 + text_size[0] + 40, 20 + text_size[1] + 30),
+                     (0, 0, 0), -1)
+        
+        # Texte de lecture
+        cv2.putText(output_image, text,
+                   (30, 20 + text_size[1] + 10), cv2.FONT_HERSHEY_SIMPLEX,
+                   1.2, (0, 255, 255), 3)
+        
+        # Ajouter aussi le nombre de chiffres détectés
+        cv2.putText(output_image, f"({len(digit_info)} chiffres détectés)",
+                   (30, 20 + text_size[1] + 40), cv2.FONT_HERSHEY_SIMPLEX,
+                   0.7, (200, 255, 200), 2)
+    # =====================================================
     
     # Ajout du timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -527,40 +628,59 @@ def process_image(image_path):
     cv2.imwrite(result_path, output_image)
     logger.info(f"Image résultat sauvegardée: {result_path}")
     
+    # ================== MODIFICATION IMPORTANTE ==================
     # Préparation des informations détaillées sur les chiffres pour la réponse
     digit_details = []
     reading_digits = list(reading) if reading else []
     
-    for i, expected_digit in enumerate(reading_digits):
-        detected = False
-        digit_confidence = 0.0
-        box_info = None
+    # Si nous avons des chiffres détectés, les mapper
+    if digit_info and reading_digits:
+        # Trier les chiffres détectés par position X
+        digit_info_sorted = sorted(digit_info, key=lambda d: d['center_x'])
         
-        # Essayer de trouver un chiffre détecté à cette position
-        if i < len(digit_info):
-            detected_digit = digit_info[i]
-            detected = (detected_digit['digit'] == expected_digit)
-            digit_confidence = detected_digit['confidence']
-            box_info = {
-                'x': detected_digit['x'],
-                'y': detected_digit['y'],
-                'width': detected_digit['w'],
-                'height': detected_digit['h']
-            }
-        else:
-            # Estimation de la confiance basée sur la position et la confiance globale
-            digit_confidence = confidence * (0.9 - (i * 0.05))
-        
-        status = '✓' if detected else '⚠' if digit_confidence > 60 else '✗'
-        
-        digit_details.append({
-            'position': i + 1,
-            'digit': expected_digit,
-            'confidence': f"{digit_confidence:.1f}%",
-            'detected': detected,
-            'status': status,
-            'box_coordinates': box_info
-        })
+        # Mapper chaque chiffre de la lecture aux chiffres détectés
+        for i, expected_digit in enumerate(reading_digits):
+            detected = False
+            digit_confidence = 0.0
+            box_info = None
+            
+            # Essayer de trouver un chiffre détecté à cette position
+            if i < len(digit_info_sorted):
+                detected_digit = digit_info_sorted[i]
+                detected = (detected_digit['digit'] == expected_digit)
+                digit_confidence = detected_digit['confidence']
+                box_info = {
+                    'x': detected_digit['x'],
+                    'y': detected_digit['y'],
+                    'width': detected_digit['w'],
+                    'height': detected_digit['h']
+                }
+            else:
+                # Estimation de la confiance basée sur la position et la confiance globale
+                digit_confidence = confidence * (0.9 - (i * 0.05))
+            
+            status = '✓' if detected else '⚠' if digit_confidence > 60 else '✗'
+            
+            digit_details.append({
+                'position': i + 1,
+                'digit': expected_digit,
+                'confidence': f"{digit_confidence:.1f}%",
+                'detected': detected,
+                'status': status,
+                'box_coordinates': box_info
+            })
+    elif reading_digits:
+        # Si nous avons une lecture mais pas de détection individuelle
+        for i, digit in enumerate(reading_digits):
+            digit_details.append({
+                'position': i + 1,
+                'digit': digit,
+                'confidence': f"{confidence * (0.9 - (i * 0.05)):.1f}%",
+                'detected': False,
+                'status': '⚠',
+                'box_coordinates': None
+            })
+    # =====================================================
     
     # Information sur tous les chiffres détectés
     all_digits_str = ''.join([d['digit'] for d in digit_info]) if digit_info else ""
@@ -574,7 +694,7 @@ def process_image(image_path):
         'debug_url': f"/debug/{debug_timestamp}_original_roi.jpg",
         'digit_details': digit_details,
         'digit_count': len(reading_digits),
-        'total_digits_detected': len(digit_info),
+        'total_digits_detected': len(digit_info) if digit_info else 0,
         'all_detected_digits': all_digits_str,
         'timestamp': timestamp,
         'debug_timestamp': debug_timestamp
@@ -582,7 +702,7 @@ def process_image(image_path):
     
     logger.info(f"Traitement terminé. Résultat: {result}")
     return result
-
+    
 # =====================================================
 # ROUTES FLASK
 # =====================================================
